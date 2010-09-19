@@ -18,11 +18,7 @@ public class InitiateMessageStep implements TestStep {
 	public InitiateMessageStep(String line, FixEngine engine, String session) {
 		this.engine=engine;
 		this.session=session;
-		try {
-			this.message=new Message(line.substring(1, line.length()));
-		} catch (InvalidMessage e) {
-			Assert.fail("Invalid message format.");
-		}
+		this.message=TestMessage.fromString(line.substring(1, line.length()));
 	}
 
 }
