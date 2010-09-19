@@ -19,6 +19,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import quickfix.field.ClOrdID;
+import quickfix.field.HandlInst;
+import quickfix.field.OrdType;
+import quickfix.field.OrderQty;
+import quickfix.field.Side;
+import quickfix.field.Symbol;
+import quickfix.field.Text;
+import quickfix.field.TransactTime;
+
 
 @RunWith(Parameterized.class)
 public class TestFixResponse {
@@ -28,6 +37,7 @@ public class TestFixResponse {
 	
 	//Static variables
 	private static Collection<Object[]> data;   //Collection for the testrunner to go through
+	private static FixEngine fixEngine;
 
 	//Test class variables 
 	private File def_File;  //File containing the individual test scripts
@@ -77,11 +87,11 @@ public class TestFixResponse {
     }
 
     
-    //Simple testcase to go through a file with Input/Expect
+    //Simple testcase to go through a file with Input/Expect on an existing fix engine
     @Test
     public void runTest() {
     	System.out.println("--------------\nRunning test for file: "+this.def_File.getName());
-    	TestRun test=new TestRun(def_File);
+    	TestRun test=new TestRun(def_File, fixEngine);
     	assertTrue("Failed:"+this.def_File.getName(),test.run());
     }
     
@@ -89,11 +99,13 @@ public class TestFixResponse {
     //Before any test runs. Here we setup the Fix connections
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		fixEngine=new FixEngine();
 	}
 
 	//After all tests have run. Here we drop the connections and clean up
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		fixEngine.close();
 	}
 
 	//Before each test. 
@@ -105,6 +117,7 @@ public class TestFixResponse {
 	@After
 	public void tearDown() throws Exception {
 	}
+
 
 	
 }
