@@ -20,6 +20,7 @@ public class TestMessage {
     private static final DateFormat DATE_FORMAT= new SimpleDateFormat("yyyyMMdd-HH:mm:ss");
     private static final Pattern DATE = Pattern.compile("<Date(\\+?)([0-9]*)([hd]?)>");
     private static final Pattern CLORDID = Pattern.compile("<Clordid=([^|]*)>");
+    private static final Pattern ORIGCLORDID = Pattern.compile("<OrigClordid=([^|]*)>");
 	
 	/***
 	 * Static helper function that creates a new quickfix message from a pipe separated string
@@ -29,6 +30,7 @@ public class TestMessage {
 	 */
 	public static quickfix.Message fromString(String message) {
 		
+		OrderManager om=OrderManager.get();
 
 		Matcher matcher;
         //Randomize ClientorderID
@@ -36,8 +38,21 @@ public class TestMessage {
         if (matcher.find()) {
                 String clordid=matcher.group(1);
                 int random = (int) (Math.random()*999999);
-                clordid+="-"+random;
-                message=matcher.replaceFirst(clordid);
+                String newClordid=clordid+"-"+random;
+                message=matcher.replaceFirst(newClordid);
+                om.addOrderId(clordid, newClordid);
+        }		
+
+        //Retrieve actually used client orderid from order manager
+        matcher=ORIGCLORDID.matcher(message);
+        if (matcher.find()) {
+                String origClordid=matcher.group(1);
+                String actOrigClordid=om.getOrigOrderId(origClordid);
+                if (actOrigClordid!=null) {
+                    message=matcher.replaceFirst(actOrigClordid);
+                } else {
+                	message=matcher.replaceFirst(origClordid);
+                }
         }		
 
         //Convert Dates
@@ -88,7 +103,7 @@ public class TestMessage {
         }
         
         //Create and return quickfix message
-        System.out.println("message:" + message);
+        //System.out.println("message:" + message);
         quickfix.Message msg=null;
         try {
 			msg=new Message(message, ddFix44);

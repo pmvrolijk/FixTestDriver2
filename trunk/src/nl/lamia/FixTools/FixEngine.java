@@ -3,6 +3,11 @@ package nl.lamia.FixTools;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import junit.framework.Assert;
 
 import quickfix.Application;
 import quickfix.ConfigError;
@@ -46,6 +51,8 @@ public class FixEngine implements Application {
 	private SocketInitiator socketInitiator;
 	private ArrayList<SessionID> sessionList;
 	
+	private Set<ExpectMessageStep> expectations;
+	
 	/***
 	 * Constructor; reads the configuration file and initializes all sessions. 
 	 * Connection only after connect(Session) call. To avoid unused 
@@ -82,6 +89,9 @@ public class FixEngine implements Application {
 	    for (int i=0;i<sessionList.size();i++) {
 	    	System.out.println("Session "+i+" "+sessionList.get(i).toString());
 	    }
+	    
+	    //Store for Expect messages:
+	    expectations=new HashSet<ExpectMessageStep>();
 	}
 	
 	public void close() {
@@ -96,7 +106,12 @@ public class FixEngine implements Application {
 			return false;
 		}
 	}
-	
+
+	public Boolean expectMessage(ExpectMessageStep caller) {
+		expectations.add(caller);
+		return true;
+	}
+
 	
 	@Override
 	public void onCreate(SessionID sessionId) {
@@ -118,21 +133,21 @@ public class FixEngine implements Application {
 
 	@Override
 	public void toAdmin(Message message, SessionID sessionId) {
-		// TODO Auto-generated method stub
-
+		System.out.println("Admin Outgoing: "+message.toString());
 	}
 
 	@Override
 	public void fromAdmin(Message message, SessionID sessionId)
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			RejectLogon {
-		// TODO Auto-generated method stub
+		System.out.println("Admin Incoming: "+message.toString());
 
 	}
 
 	@Override
 	public void toApp(Message message, SessionID sessionId) throws DoNotSend {
-		// TODO Auto-generated method stub
+		OrderManager om=OrderManager.get();
+		om.addMessage(message);
 		System.out.println("Outgoing: "+message.toString());
 
 	}
@@ -141,8 +156,17 @@ public class FixEngine implements Application {
 	public void fromApp(Message message, SessionID sessionId)
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			UnsupportedMessageType {
-		// TODO Auto-generated method stub
+		OrderManager om=OrderManager.get();
+		om.addMessage(message);
 		System.out.println("Incoming: "+message.toString());
+
+		//See whether somebody is interested:
+		for (ExpectMessageStep caller: expectations) {
+			//no check now:
+			caller.receive(message);
+			expectations.remove(caller);
+		}
+	
 	}
 
 	/**

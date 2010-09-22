@@ -1,0 +1,7 @@
+# Testing a replace of a new order based on the originally issued randomized clordid
+
+iCONNECT FIX.4.2:BANZAI->EXEC
+I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=Test1>|21=1|38=100|40=1|54=1|55=LNUX|58=Please deliver !|60=20100919-17:36:58.858|10=085|
+E8=FIX.4.2|9=136|35=8|.*
+I8=FIX.4.2|9=136|35=G|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=Test1b>|41=<OrigClordid=Test1>|21=1|38=200|40=1|54=1|55=LNUX|58=Please deliver more !|60=20100919-17:36:58.858|10=085|
+eDISCONNECT

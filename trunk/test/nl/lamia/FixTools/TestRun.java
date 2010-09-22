@@ -66,7 +66,7 @@ public class TestRun {
                 } else if (line.startsWith("I")) {
                     steps.add(new InitiateMessageStep(line, fixEngine, sessionName));
                 } else if (line.startsWith("E")) {
-                    //steps.add(new ExpectMessageStep(line));
+                    steps.add(new ExpectMessageStep(line, fixEngine, sessionName));
                 } else if (line.matches("^i\\d*,?CONNECT.*")) {
                 	String[] temp=line.split(" ");
                 	if (temp.length<2) Assert.fail("No session specified");
@@ -101,6 +101,7 @@ public class TestRun {
 			try {
 				result=steps.get(i).run();
 			} catch (Exception e) {
+				e.printStackTrace();
 				Assert.fail("Error executing step "+i+".");
 			}
 			if (!result) Assert.fail("Failure: step "+i+".");
