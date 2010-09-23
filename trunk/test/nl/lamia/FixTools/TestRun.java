@@ -65,6 +65,11 @@ public class TestRun {
                     steps.add(new PrintComment(line));
                 } else if (line.startsWith("I")) {
                     steps.add(new InitiateMessageStep(line, fixEngine, sessionName));
+                } else if (line.startsWith("WAIT")) {
+                	String[] temp=line.split(" ");
+                	if (temp.length<2) Assert.fail("No wait time specified, give time in ms.");
+                	int time=Integer.parseInt(temp[1]);
+                	steps.add(new WaitStep(time));
                 } else if (line.startsWith("E")) {
                     steps.add(new ExpectMessageStep(line, fixEngine, sessionName));
                 } else if (line.matches("^i\\d*,?CONNECT.*")) {
@@ -107,9 +112,6 @@ public class TestRun {
 			if (!result) Assert.fail("Failure: step "+i+".");
 		}
 		return true;
-		//quickfix.fix42.Message message=this.testOrder();  //These would come from the file
-		//this.sessionName="FIX.4.2:BANZAI->EXEC";  //This would come from the CONNECT line
-		//return fixEngine.sendMessage(message, this.sessionName);
 	}
 
 	public Boolean quickTest() {
