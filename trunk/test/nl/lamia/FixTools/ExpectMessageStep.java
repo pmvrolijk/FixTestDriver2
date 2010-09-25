@@ -8,8 +8,7 @@ import quickfix.SessionID;
 
 public class ExpectMessageStep implements TestStep {
 
-	private final static int TIMEOUT=50;
-	private final static int TIMES=200;
+	private final static int TIMEOUT=10000;
 	
 	private FixEngine engine;
 	private SessionID session;
@@ -21,18 +20,27 @@ public class ExpectMessageStep implements TestStep {
 	public Boolean run() throws Exception {
 		engine.expectMessage(this);
 		System.out.println("Waiting for answer...");
-		int i=0;
-		while (!received && i<TIMES) {
-			Thread.sleep(TIMEOUT);
-			i++;
+		Boolean timeout=false;
+		synchronized (this) {
+			while (!received && !timeout) {
+				try {
+					this.notifyAll();
+					wait(TIMEOUT);
+					System.out.println("Woke up!");
+					if (!received) timeout=true;
+					//System.out.println("got something ??"+received);
+				} catch (Exception e) {
+					Assert.fail("Waiting interrupted before "+TIMEOUT/1000+" sec.");
+				}
 			}
-		Assert.assertTrue("Expect: No message returned in "+TIMES*TIMEOUT/1000+" sec.", received);    //No answer is fail
+		}
+		Assert.assertTrue("Expect: No message returned in "+TIMEOUT/1000+" sec.", received);    //No answer is fail
 		//Compare the message to the expected:
 		Assert.assertTrue("Answer doesn't match expected message.",TestMessage.compare(answer, expect)); 
 		return true;
 	}
 	
-	public void receive(quickfix.Message answer) {
+	synchronized public void receive(quickfix.Message answer) {
 		System.out.println("We were Called ! "+answer);
 		this.answer=answer;
 		this.received=true;

@@ -165,8 +165,11 @@ public class FixEngine implements Application {
 			//Check for session id only. Heartbeats come in on the admin callback
 			//so the next message is prob an incoming answer. 
 			//If this turns out not to be the case, then we may need to expand this
-			//to expect a certain msgtype as well.  
-			caller.receive(message);     //wake up sleepy head
+			//to expect a certain msgtype as well. 
+			synchronized (caller) {
+				caller.receive(message);     //wake up sleepy head
+				caller.notifyAll();
+			}
 			expectations.remove(caller); //only one message per expect
 		}
 	
