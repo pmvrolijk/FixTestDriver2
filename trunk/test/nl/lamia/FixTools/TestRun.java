@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.Assert;
 
 import quickfix.DoNotSend;
@@ -33,6 +35,8 @@ import quickfix.field.TransactTime;
  */
 public class TestRun {
 
+	private static Logger logger = Logger.getLogger(TestRun.class);
+	
 	private ArrayList<TestStep> steps;
 	private FixEngine fixEngine;
 	private String sessionName;

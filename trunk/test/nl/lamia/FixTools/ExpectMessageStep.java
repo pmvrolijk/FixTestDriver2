@@ -2,12 +2,16 @@ package nl.lamia.FixTools;
 
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.Assert;
 
 import quickfix.SessionID;
 
 public class ExpectMessageStep implements TestStep {
 
+	private static Logger logger = Logger.getLogger(ExpectMessageStep.class);
+	
 	private final static int TIMEOUT=10000;
 	
 	private FixEngine engine;
@@ -19,14 +23,14 @@ public class ExpectMessageStep implements TestStep {
 	@Override
 	public Boolean run() throws Exception {
 		engine.expectMessage(this);
-		System.out.println("Waiting for answer...");
+		logger.info("Waiting for answer...");
 		Boolean timeout=false;
 		synchronized (this) {
 			while (!received && !timeout) {
 				try {
 					this.notifyAll();
 					wait(TIMEOUT);
-					System.out.println("Woke up!");
+					logger.info("Woke up!");
 					if (!received) timeout=true;
 					//System.out.println("got something ??"+received);
 				} catch (Exception e) {
@@ -41,7 +45,7 @@ public class ExpectMessageStep implements TestStep {
 	}
 	
 	synchronized public void receive(quickfix.Message answer) {
-		System.out.println("We were Called ! "+answer);
+		logger.info("We were Called ! "+answer);
 		this.answer=answer;
 		this.received=true;
 	}

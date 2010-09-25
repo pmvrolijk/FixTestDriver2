@@ -1,12 +1,16 @@
 package nl.lamia.FixTools;
 
+import org.apache.log4j.Logger;
+
 public class PrintComment implements TestStep {
 
+	private static Logger logger = Logger.getLogger(PrintComment.class);
+	
 	private String line;
 	
 	@Override
 	public Boolean run() throws Exception {
-		System.out.println(line);
+		logger.info(line);
 		return true;
 	}
 	

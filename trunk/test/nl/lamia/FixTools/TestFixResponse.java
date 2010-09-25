@@ -10,6 +10,8 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,7 +40,11 @@ public class TestFixResponse {
 	//Static variables
 	private static Collection<Object[]> data;   //Collection for the testrunner to go through
 	private static FixEngine fixEngine;
-
+	private static Logger logger = Logger.getLogger(TestFixResponse.class);
+	static {
+		PropertyConfigurator.configure("config/log4j.properties");
+	}
+	
 	//Test class variables 
 	private File def_File;  //File containing the individual test scripts
 	
@@ -60,7 +66,7 @@ public class TestFixResponse {
 	private static void addFile(File file) {
 		if (file.getName().endsWith(".def")) {
 			data.add(new Object[] { file });
-			System.out.println("Test "+data.size()+":"+file.getName());
+			logger.info("Test "+data.size()+":"+file.getName());
 		}
 	}
 	
@@ -81,7 +87,7 @@ public class TestFixResponse {
                     }
                 }
             } else {
-                System.out.println("directory not found: " + directory.getPath());
+                logger.error("directory not found: " + directory.getPath());
             }
         }
     }
@@ -90,7 +96,7 @@ public class TestFixResponse {
     //Simple testcase to go through a file with Input/Expect on an existing fix engine
     @Test
     public void runTest() {
-    	System.out.println("--------------\nRunning test for file: "+this.def_File.getName());
+    	logger.info("-------------- Running test for file: "+this.def_File.getName());
     	TestRun test=new TestRun(def_File, fixEngine);
     	assertTrue("Failed:"+this.def_File.getName(),test.run());
     }

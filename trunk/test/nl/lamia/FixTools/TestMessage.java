@@ -11,6 +11,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.regex.*;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.Assert;
 
 import quickfix.ConfigError;
@@ -20,9 +22,12 @@ import quickfix.Message;
 
 public class TestMessage {
 
+	private static Logger logger = Logger.getLogger(TestMessage.class);
+	
     private static final DecimalFormat CHECKSUM_FORMAT = new DecimalFormat("000");
     private static final DateFormat DATE_FORMAT= new SimpleDateFormat("yyyyMMdd-HH:mm:ss");
-    private static final Pattern DATE = Pattern.compile("<Date(\\+?)([0-9]*)([hd]?)>");
+    private static final Pattern DATE = Pattern.compile("<Date(\\+?)([0-9]*)([hd]?)[,]?([^>|]*)>");
+    private static final Pattern PRODUCT = Pattern.compile("<Product=([^,|]*),([^|]*)>");
     private static final Pattern CLORDID = Pattern.compile("<Clordid=([^|]*)>");
     private static final Pattern ORIGCLORDID = Pattern.compile("<OrigClordid=([^|]*)>");
     private static final Pattern FIELDPATTERN = Pattern.compile("(\\d+)=([^\\|]+)\\|");
@@ -85,7 +90,7 @@ public class TestMessage {
 
         //Convert Dates
         matcher=DATE.matcher(message);
-        String date;
+        String date="";
         StringBuffer stringBuffer=new StringBuffer("");
         while (matcher.find()) {
     			if (matcher.group(1).equals("+")) {
@@ -100,7 +105,15 @@ public class TestMessage {
 						cal.add(Calendar.HOUR, nr);
     				}
 					Date newDate = cal.getTime();
-    				date=DATE_FORMAT.format(newDate);
+					if (!matcher.group(4).equals("")) {
+						try {
+							date=new SimpleDateFormat(matcher.group(4)).format(newDate);
+						} catch (IllegalArgumentException ex ) { 
+								Assert.fail("Illegal date format: "+matcher.group(4)); 
+						}
+					} else {
+						date=DATE_FORMAT.format(newDate);
+					}
     				matcher.appendReplacement(stringBuffer, date);
     			} else {
     				//Simpel date replace
@@ -111,7 +124,23 @@ public class TestMessage {
         matcher.appendTail(stringBuffer);
         message=new String(stringBuffer.toString());
         
-
+        //Replace Product IDs
+        matcher=PRODUCT.matcher(message);
+        stringBuffer=new StringBuffer("");
+        String product,property,value;
+        Dictionary dict=Dictionary.getDict();
+        while (matcher.find()) {
+        		product=matcher.group(1);
+        		property=matcher.group(2);
+    			if (product.length()>0 && property.length()>0) {
+    				//System.out.println("Getting "+product+" 's "+property);
+    				value=dict.getProductProp(product, property);
+    				if (value!=null) matcher.appendReplacement(stringBuffer, value);
+    			} 
+        }		
+        matcher.appendTail(stringBuffer);
+        message=new String(stringBuffer.toString());
+        
         //Quickfix SOH separators
         message=message.replace('|', '\001');
         
@@ -123,7 +152,7 @@ public class TestMessage {
         message += "10=" + CHECKSUM_FORMAT.format(checksum(message)) + '\001';
 
         //Create and return quickfix message
-        //System.out.println("message:" + message);
+        //logger.info("message:" + message);
         quickfix.Message msg=null;
         try {
         	System.out.println();
@@ -191,7 +220,7 @@ public class TestMessage {
                         .getValue());
             }
         }
-    	System.out.println("Answer matches expectation.");
+    	logger.info("Answer matches expectation.");
     	return true;
     }
 

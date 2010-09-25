@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.Assert;
 
 import quickfix.Application;
@@ -41,6 +43,8 @@ import quickfix.field.*;
  */
 public class FixEngine implements Application {
 
+	private static Logger logger = Logger.getLogger(FixEngine.class);
+	
 	//Defaults
 	private static String fileName="config/FixEngine.cfg";
 	
@@ -62,10 +66,10 @@ public class FixEngine implements Application {
 	    try {
 			settings = new SessionSettings(new FileInputStream(fileName));
 		} catch (FileNotFoundException e) {
-			System.out.println("Configuration file not found: "+fileName);
+			logger.error("Configuration file not found: "+fileName);
 			e.printStackTrace();
 		} catch (ConfigError e) {
-			System.out.println("Configuration error in config file: "+fileName);
+			logger.error("Configuration error in config file: "+fileName);
 			e.printStackTrace();
 		}
 	    storeFactory = new FileStoreFactory(settings);
@@ -78,16 +82,16 @@ public class FixEngine implements Application {
 				Thread.sleep(50);
 			}
 	    } catch (ConfigError e) {
-			System.out.println("Configuration error starting Initiator (configuration file "+fileName+").");
+			logger.error("Configuration error starting Initiator (configuration file "+fileName+").");
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			System.out.println("Ongeduld !");
+			logger.error("Ongeduld !");
 			e.printStackTrace();
 		}
 	    //Print created sessions
 	    sessionList=socketInitiator.getSessions();
 	    for (int i=0;i<sessionList.size();i++) {
-	    	System.out.println("Session "+i+" "+sessionList.get(i).toString());
+	    	logger.debug("Session "+i+" "+sessionList.get(i).toString());
 	    }
 	    
 	    //Store for Expect messages:
@@ -102,7 +106,7 @@ public class FixEngine implements Application {
 		try {
 			return Session.sendToTarget(message, new SessionID(sessionName)); 
 		} catch (SessionNotFound e) {
-			System.out.println("Session not found: "+sessionName);
+			logger.warn("Session not found: "+sessionName);
 			return false;
 		}
 	}
@@ -133,14 +137,14 @@ public class FixEngine implements Application {
 
 	@Override
 	public void toAdmin(Message message, SessionID sessionId) {
-		System.out.println("Admin Outgoing: "+message.toString());
+		logger.info("Admin Outgoing: "+message.toString().replace('\001', '|'));
 	}
 
 	@Override
 	public void fromAdmin(Message message, SessionID sessionId)
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			RejectLogon {
-		System.out.println("Admin Incoming: "+message.toString());
+		logger.info("Admin Incoming: "+message.toString().replace('\001', '|'));
 
 	}
 
@@ -148,7 +152,7 @@ public class FixEngine implements Application {
 	public void toApp(Message message, SessionID sessionId) throws DoNotSend {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
-		System.out.println("Outgoing: "+message.toString());
+		logger.info("Outgoing: "+message.toString().replace('\001', '|'));
 
 	}
 
@@ -158,7 +162,7 @@ public class FixEngine implements Application {
 			UnsupportedMessageType {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
-		System.out.println("Incoming: "+message.toString());
+		logger.info("Incoming: "+message.toString().replace('\001', '|'));
 
 		//See whether somebody is interested:
 		for (ExpectMessageStep caller: expectations) {
@@ -193,7 +197,7 @@ public class FixEngine implements Application {
 		message.set(new Text("Please deliver !"));
 		message.set(new OrderQty(100));
 		Boolean succes=engine.sendMessage(message, "FIX.4.2:BANZAI->EXEC");
-		System.out.println("Result :"+succes.toString());
+		logger.debug("Result :"+succes.toString());
 		Thread.sleep(10000);
 		engine.close();
 	}

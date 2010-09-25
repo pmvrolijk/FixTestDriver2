@@ -1,12 +1,16 @@
 package nl.lamia.FixTools;
 
+import org.apache.log4j.Logger;
+
 public class WaitStep implements TestStep {
 
+	private static Logger logger = Logger.getLogger(WaitStep.class);
+	
 	static int time;
 	
 	@Override
 	public Boolean run() throws Exception {
-		System.out.println("Waiting for "+time+" ms.");
+		logger.info("Waiting for "+time+" ms.");
 		Thread.sleep(time);
 		return true;
 	}
