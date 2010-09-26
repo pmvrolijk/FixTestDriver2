@@ -1,6 +1,6 @@
 package nl.lamia.FixTools;
 
-import javax.swing.DefaultComboBoxModel;
+/*import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -166,7 +166,7 @@ public class TestDriverGui extends JFrame {
 	 * It is not expected to be managed by the designer.
 	 * You can modify it as you like.
 	 */
-	public static void main(String[] args) {
+/*	public static void main(String[] args) {
 		installLnF();
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -183,3 +183,4 @@ public class TestDriverGui extends JFrame {
 	}
 
 }
+*/

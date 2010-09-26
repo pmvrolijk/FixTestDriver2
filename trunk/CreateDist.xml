@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project FixTestDriver with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver.jar">
+            <manifest>
+                <attribute name="Main-Class" value="nl.lamia.FixTools.FixEngine"/>
+                <attribute name="Class-Path" value=". RunFixTestDriver_lib/mina-core-1.1.7.jar RunFixTestDriver_lib/mina-filter-ssl-1.1.7.jar RunFixTestDriver_lib/hamcrest-all-1.1.jar RunFixTestDriver_lib/mockito-all-1.4.jar RunFixTestDriver_lib/junit-4.5.jar RunFixTestDriver_lib/proxool-0.9.1.jar RunFixTestDriver_lib/proxool-cglib.jar RunFixTestDriver_lib/sleepycat-je_2.1.30.jar RunFixTestDriver_lib/hsqldb-1.8.0.jar RunFixTestDriver_lib/jsch-0.1.21.jar RunFixTestDriver_lib/tyrex-1.0.3.jar RunFixTestDriver_lib/jcl104-over-slf4j-1.3.0.jar RunFixTestDriver_lib/slf4j-api-1.5.3.jar RunFixTestDriver_lib/slf4j-jdk14-1.5.3.jar RunFixTestDriver_lib/junit.jar RunFixTestDriver_lib/org.hamcrest.core_1.1.0.v20090501071000.jar RunFixTestDriver_lib/grouplayout.jar RunFixTestDriver_lib/log4j-1.2.16.jar"/>
+            </manifest>
+            <fileset dir="/Users/marcel/Documents/workspace/FixTestDriver/bin"/>
+            <fileset dir="/Users/marcel/Documents/workspace/quickfixj/classes"/>
+            <fileset dir="/Users/marcel/Documents/workspace/quickfixj/core/src/main/resources"/>
+        </jar>
+        <delete dir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <mkdir dir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/mina-core-1.1.7.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/optional/mina-filter-ssl-1.1.7.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/test/lib/hamcrest-all-1.1.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/test/lib/mockito-all-1.4.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/test/lib/junit-4.5.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/optional/proxool-0.9.1.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/optional/proxool-cglib.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/optional/sleepycat-je_2.1.30.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/test/lib/hsqldb-1.8.0.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/test/lib/jsch-0.1.21.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/test/lib/tyrex-1.0.3.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/java4/optional/jcl104-over-slf4j-1.3.0.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/java4/slf4j-api-1.5.3.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/quickfixj/core/src/main/lib/java4/slf4j-jdk14-1.5.3.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Applications/eclipse/plugins/org.junit_4.8.1.v4_8_1_v20100427-1100/junit.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Applications/eclipse/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/.metadata/.plugins/org.dyno.visual.swing/layoutext/grouplayout.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+        <copy file="/Users/marcel/Documents/workspace/Libraries/apache-log4j-1.2.16/log4j-1.2.16.jar" todir="/Users/marcel/Documents/workspace/FixTestDriver/dist/RunFixTestDriver_lib"/>
+    </target>
+</project>
