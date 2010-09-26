@@ -6,9 +6,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
-import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -21,18 +19,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import quickfix.field.ClOrdID;
-import quickfix.field.HandlInst;
-import quickfix.field.OrdType;
-import quickfix.field.OrderQty;
-import quickfix.field.Side;
-import quickfix.field.Symbol;
-import quickfix.field.Text;
-import quickfix.field.TransactTime;
 
 
 @RunWith(Parameterized.class)
-public class TestFixResponse {
+public class FixResponseTest {
 
 	//Defaults (overridden by -D parameters)
 	private static String testCases="testcases";   //Relative location for the def files: -Dtestcase.dir=
@@ -40,7 +30,7 @@ public class TestFixResponse {
 	//Static variables
 	private static Collection<Object[]> data;   //Collection for the testrunner to go through
 	private static FixEngine fixEngine;
-	private static Logger logger = Logger.getLogger(TestFixResponse.class);
+	private static Logger logger = Logger.getLogger(FixResponseTest.class);
 	static {
 		PropertyConfigurator.configure("config/log4j.properties");
 	}
@@ -49,7 +39,7 @@ public class TestFixResponse {
 	private File def_File;  //File containing the individual test scripts
 	
 	//Constructor for the test case class
-	public TestFixResponse(File file) {
+	public FixResponseTest(File file) {
 		this.def_File=file;
 	}
 
