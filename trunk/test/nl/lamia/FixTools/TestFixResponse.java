@@ -96,7 +96,7 @@ public class TestFixResponse {
     //Simple testcase to go through a file with Input/Expect on an existing fix engine
     @Test
     public void runTest() {
-    	logger.info("-------------- Running test for file: "+this.def_File.getName());
+    	logger.info("Running test for file: "+this.def_File.getName());
     	TestRun test=new TestRun(def_File, fixEngine);
     	assertTrue("Failed:"+this.def_File.getName(),test.run());
     }

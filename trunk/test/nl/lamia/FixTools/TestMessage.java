@@ -31,6 +31,7 @@ public class TestMessage {
     private static final Pattern CLORDID = Pattern.compile("<Clordid=([^|]*)>");
     private static final Pattern ORIGCLORDID = Pattern.compile("<OrigClordid=([^|]*)>");
     private static final Pattern FIELDPATTERN = Pattern.compile("(\\d+)=([^\\|]+)\\|");
+    private static final Pattern REGEXEXPECT = Pattern.compile("<([^>]*)>");
     private static HashSet<String> TIMEFIELDS=null;
     static {
     	TIMEFIELDS=new HashSet<String>();
@@ -206,8 +207,8 @@ public class TestMessage {
             //System.out.println("key:"+key+",Value:"+entry.getValue());
             if (key.equals("10") || key.equals("9") ||	   //Checksum and length
             	key.equals("45") || key.equals("34") ||    //Sequence numbers
-            	key.equals("17") || key.equals("11") ||    //ExecutionID && Clordid, solved later
-            	key.equals("37") || key.equals("11")       //Orderid
+            	key.equals("17") ||     //ExecutionID 
+            	key.equals("37")        //Orderid
             	) {   //skip fields
                 continue;
             } else if (!expFields.containsKey(key)) {     //Didn't expect that ! 
@@ -215,9 +216,16 @@ public class TestMessage {
             } else if (TIMEFIELDS.contains(key)) {        //TODO: Check on length only now, format when needed
                 Assert.assertEquals("Timefield " + key + " unexpected length.",
                 				entry.getValue().length(),expFields.get(key).length());
-            } else {
-                Assert.assertEquals("field " + key + " not equal: ", expFields.get(key), entry
-                        .getValue());
+            } else if (REGEXEXPECT.matcher(expFields.get(key)).find()) {
+            	//Regular expression
+            	logger.debug("We are doing a regex matching: "+expFields.get(key)+" vs "+entry.getValue());
+            	Matcher m=REGEXEXPECT.matcher(expFields.get(key));
+            	m.find();
+            	String expPattern=m.group(1);
+            	Assert.assertTrue("Tag "+key+" value "+entry.getValue()+" doesn't match regex: "+expPattern,
+            			entry.getValue().matches(expPattern));
+            } else {	
+                Assert.assertEquals("field " + key + " not equal: ", expFields.get(key), entry.getValue());
             }
         }
     	logger.info("Answer matches expectation.");

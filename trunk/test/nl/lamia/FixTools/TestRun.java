@@ -40,6 +40,7 @@ public class TestRun {
 	private ArrayList<TestStep> steps;
 	private FixEngine fixEngine;
 	private String sessionName;
+	private String testname;
 	
 	/***
 	 * Constructor. Sets up the test case:
@@ -49,6 +50,7 @@ public class TestRun {
 	 */
 	public TestRun(File file, FixEngine engine) {
 		this.fixEngine=engine;
+		this.testname=file.getName();
 		try {
 			this.load(file);
 		} catch (IOException e) {
@@ -106,6 +108,10 @@ public class TestRun {
 	 */
 	public Boolean run() {
 		Boolean result=false;
+		logger.info("------------------------------------------------");
+		logger.info("- START test case: "+testname);
+		logger.info("- "+steps.size()+" steps");
+		logger.info("------------------------------------------------");
 		for (int i=0;i<steps.size();i++) {
 			try {
 				result=steps.get(i).run();
@@ -115,6 +121,10 @@ public class TestRun {
 			}
 			if (!result) Assert.fail("Failure: step "+i+".");
 		}
+		logger.info("------------------------------------------------");
+		logger.info("- END test case: "+testname);
+		logger.info("- SUCCES");
+		logger.info("------------------------------------------------");
 		return true;
 	}
 
