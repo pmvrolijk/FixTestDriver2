@@ -95,13 +95,13 @@ public class FixResponseTest {
     //Before any test runs. Here we setup the Fix connections
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		fixEngine=new FixEngine();
+		fixEngine=FixEngine.getFixEngine();
 	}
 
 	//After all tests have run. Here we drop the connections and clean up
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		fixEngine.close();
+		//fixEngine.close();
 	}
 
 	//Before each test. 

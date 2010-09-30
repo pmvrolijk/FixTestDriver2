@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.swing.JFrame;
 
 import org.apache.log4j.Logger;
 
@@ -54,9 +55,21 @@ public class FixEngine implements Application {
 	private MessageFactory messageFactory;
 	private SocketInitiator socketInitiator;
 	private ArrayList<SessionID> sessionList;
-	
+	private MainWindow parentWindow;
+
 	private Set<ExpectMessageStep> expectations;
 	
+        private static FixEngine fixengine=null;
+
+        public static FixEngine getFixEngine() {
+            if (fixengine==null) fixengine=new FixEngine();
+            return fixengine;
+        }
+
+        public void setParentWindow(MainWindow window) {
+            this.parentWindow=window;
+        }
+
 	/***
 	 * Constructor; reads the configuration file and initializes all sessions. 
 	 * Connection only after connect(Session) call. To avoid unused 
@@ -124,9 +137,8 @@ public class FixEngine implements Application {
 	}
 
 	@Override
-	public void onLogon(SessionID sessionId) {
-		// TODO Auto-generated method stub
-
+    	public void onLogon(SessionID sessionId) {
+            if (this.parentWindow!=null) parentWindow.setFixStatus("Logged on");
 	}
 
 	@Override
@@ -138,6 +150,9 @@ public class FixEngine implements Application {
 	@Override
 	public void toAdmin(Message message, SessionID sessionId) {
 		logger.info("Admin Outgoing: "+message.toString().replace('\001', '|'));
+                try {
+                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: received");
+                } catch (Exception e) {}
 	}
 
 	@Override
@@ -145,7 +160,9 @@ public class FixEngine implements Application {
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			RejectLogon {
 		logger.info("Admin Incoming: "+message.toString().replace('\001', '|'));
-
+                try {
+                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: sent");
+                } catch (Exception e) {}
 	}
 
 	@Override
@@ -153,7 +170,9 @@ public class FixEngine implements Application {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
 		logger.info("Outgoing: "+message.toString().replace('\001', '|'));
-
+                try {
+                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: recvd ");
+                } catch (Exception e) {}
 	}
 
 	@Override
@@ -163,6 +182,9 @@ public class FixEngine implements Application {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
 		logger.info("Incoming: "+message.toString().replace('\001', '|'));
+                try {
+                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: sent");
+                } catch (Exception e) {}
 
 		//See whether somebody is interested:
 		for (ExpectMessageStep caller: expectations) {
