@@ -30,6 +30,7 @@ public class FixResponseTest {
 	//Static variables
 	private static Collection<Object[]> data;   //Collection for the testrunner to go through
 	private static FixEngine fixEngine;
+        private static MainWindow mainApp;
 	private static Logger logger = Logger.getLogger(FixResponseTest.class);
 	static {
 		PropertyConfigurator.configure("config/log4j.properties");
@@ -96,6 +97,10 @@ public class FixResponseTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		fixEngine=FixEngine.getFixEngine();
+
+                ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+                mainApp=cm.getMainApp();
+                if (mainApp!=null) mainApp.cleanTestOutput();
 	}
 
 	//After all tests have run. Here we drop the connections and clean up

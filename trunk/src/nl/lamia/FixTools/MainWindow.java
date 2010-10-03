@@ -11,7 +11,15 @@
 
 package nl.lamia.FixTools;
 
+import java.io.File;
+import java.util.Vector;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import org.apache.log4j.Logger;
 import org.junit.runner.JUnitCore;
 
 /**
@@ -20,12 +28,42 @@ import org.junit.runner.JUnitCore;
  */
 public class MainWindow extends javax.swing.JFrame {
 
+    private static Logger logger = Logger.getLogger(MainWindow.class);
+
     private FixEngine fe;
+    private ConfigurationManager cm;
+    private String testCasesToRun;
+    private String testCasesRoot;
 
     /** Creates new form MainWindow */
     public MainWindow() {
         fe=FixEngine.getFixEngine();
         initComponents();
+
+        this.cm=ConfigurationManager.getConfigurationManager();
+
+        //register ourselves for callbacks
+        cm.setMainApp(this);
+
+        //Fill the testcases tree
+        this.testCasesRoot=cm.getProperty("Application.testcases","testcases");
+        loadTestCases(new File(testCasesRoot));
+        //initially testcases to run:=testcases root
+        this.testCasesToRun=this.testCasesRoot;
+        jTree_testCases.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) e
+                    .getPath().getLastPathComponent();
+                System.out.println("You selected "+e.getPath()+" - "+ node);
+                if (node.isLeaf()) {
+                       testCasesToRun=node.getParent()+"/"+ node.toString();
+                       System.out.println("To run: "+testCasesToRun);
+                }else{
+                       testCasesToRun=node.toString();
+                       System.out.println("To run: "+testCasesToRun);
+                }
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -38,15 +76,17 @@ public class MainWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTree1 = new javax.swing.JTree();
+        jTree_testCases = new javax.swing.JTree();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jEditorPane1 = new javax.swing.JEditorPane();
+        jButtonRunSelected = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTestOutput = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuSaveSettings = new javax.swing.JMenuItem();
+        jMenuLoadTestCases = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
@@ -56,7 +96,7 @@ public class MainWindow extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Fix Test Driver");
 
-        jScrollPane1.setViewportView(jTree1);
+        jScrollPane1.setViewportView(jTree_testCases);
 
         jLabel1.setText("Testcase files");
 
@@ -67,13 +107,40 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("Run selected");
-
-        jScrollPane2.setViewportView(jEditorPane1);
+        jButtonRunSelected.setText("Run selected");
+        jButtonRunSelected.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRunSelectedActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Engine");
 
+        jTestOutput.setBackground(new java.awt.Color(220, 220, 220));
+        jTestOutput.setColumns(20);
+        jTestOutput.setEditable(false);
+        jTestOutput.setFont(new java.awt.Font("Courier New", 0, 12)); // NOI18N
+        jTestOutput.setRows(5);
+        jTestOutput.setBorder(javax.swing.BorderFactory.createTitledBorder("Test Output"));
+        jScrollPane2.setViewportView(jTestOutput);
+
         jMenu1.setText("File");
+
+        jMenuSaveSettings.setText("Save settings");
+        jMenuSaveSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuSaveSettingsActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuSaveSettings);
+
+        jMenuLoadTestCases.setText("Load testcases...");
+        jMenuLoadTestCases.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuLoadTestCasesActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuLoadTestCases);
 
         jMenuItem2.setText("Quit");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -120,40 +187,44 @@ public class MainWindow extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+                .addContainerGap()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(jButton2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jButton1))
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 329, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(jLabel2)
-                        .add(111, 111, 111))))
+                        .add(111, 111, 111))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(jButtonRunSelected)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(jButton1)))
+                        .addContainerGap())))
+            .add(layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(jLabel1)
+                .addContainerGap(616, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(20, 20, 20)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(jLabel2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel1)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                        .add(18, 18, 18)
+                    .add(layout.createSequentialGroup()
+                        .add(48, 48, 48)
+                        .add(jLabel2)
+                        .add(12, 12, 12)
+                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jButton1)
-                            .add(jButton2)))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
+                            .add(jButtonRunSelected)))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -180,9 +251,14 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         //Run all tests
+        System.setProperty("testcase.dir",testCasesRoot);
         fe.setParentWindow(this);
         Thread t=new Thread(new Runnable() {
-            public void run() {JUnitCore.runClasses(FixResponseTest.class);}
+            public void run() {
+                    JUnitCore core=new JUnitCore();
+                    core.addListener(new JunitListener());
+                    core.run(FixResponseTest.class);
+                }
             });
         t.start();
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -192,6 +268,38 @@ public class MainWindow extends javax.swing.JFrame {
             public void run() {new OrderManagerGui().setVisible(true);}
         });
     }//GEN-LAST:event_jMenuItemOrderManagerActionPerformed
+
+    private void jMenuLoadTestCasesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuLoadTestCasesActionPerformed
+        JFileChooser dialog=new JFileChooser();
+        dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int result=dialog.showOpenDialog(this);
+        if (result==JFileChooser.APPROVE_OPTION) {
+            File directory=dialog.getSelectedFile();
+            loadTestCases(directory);
+            cm.setProperty("Application.testcases", directory.getAbsolutePath());
+        } else {
+            //no change
+        }
+        
+    }//GEN-LAST:event_jMenuLoadTestCasesActionPerformed
+
+    private void jButtonRunSelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRunSelectedActionPerformed
+        //Run only selected tests
+        System.setProperty("testcase.dir",testCasesToRun);
+        fe.setParentWindow(this);
+        Thread t=new Thread(new Runnable() {
+            public void run() {
+                    JUnitCore core=new JUnitCore();
+                    core.addListener(new JunitListener());
+                    core.run(FixResponseTest.class);
+                }
+            });
+        t.start();    }//GEN-LAST:event_jButtonRunSelectedActionPerformed
+
+    private void jMenuSaveSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuSaveSettingsActionPerformed
+        cm.saveProperties();
+
+    }//GEN-LAST:event_jMenuSaveSettingsActionPerformed
 
     /**
     * @param args the command line arguments
@@ -204,15 +312,63 @@ public class MainWindow extends javax.swing.JFrame {
         });
     }
 
+    public void appendTestOutput (String msg) {
+        this.jTestOutput.append(msg+"\n");
+    }
+
+    public void cleanTestOutput() {
+        this.jTestOutput.setText("");
+    }
+
     public void setFixStatus(String msg) {
         jLabel2.setText(msg);
+    }
+
+    public void loadTestCases(File dir) {
+        //initialize the JTree from the root dir
+        DefaultTreeModel model=new DefaultTreeModel(addNodes(null, dir));
+        jTree_testCases.setModel(model);
+
+    }
+
+    private DefaultMutableTreeNode addNodes(DefaultMutableTreeNode currentParent, File dir) {
+        String path=dir.getPath();
+        logger.debug("Scanning dir "+path);
+        DefaultMutableTreeNode currentDir=new DefaultMutableTreeNode(path);
+        if (currentParent!=null) {
+            currentParent.add(currentDir);
+        }
+        Vector list = new Vector();
+        String[] dirList = dir.list();
+        for (int i = 0; i < dirList.length; i++) {
+            list.addElement(dirList[i]);
+            logger.debug("   Item "+dirList[i].toString());
+        }
+        File f;
+        Vector<String> files = new Vector<String>();
+        for (int i = 0; i < list.size(); i++) {
+            String item = (String) list.elementAt(i);
+            String newPath;
+            if (path.equals("."))
+                newPath = item;
+            else
+                newPath = path + File.separator + item;
+            logger.debug("   newPath "+newPath);
+            if ((f = new File(newPath)).isDirectory() && !newPath.endsWith(".svn"))
+                addNodes(currentDir, f);
+            else
+                files.addElement(item);
+        }
+        for (int fnum = 0; fnum < files.size(); fnum++)
+            if (files.elementAt(fnum).endsWith(".def"))
+                currentDir.add(new DefaultMutableTreeNode(files.elementAt(fnum)));
+        return currentDir;
     }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JEditorPane jEditorPane1;
+    private javax.swing.JButton jButtonRunSelected;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
@@ -222,9 +378,12 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItemOrderManager;
+    private javax.swing.JMenuItem jMenuLoadTestCases;
+    private javax.swing.JMenuItem jMenuSaveSettings;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTree jTree1;
+    private javax.swing.JTextArea jTestOutput;
+    private javax.swing.JTree jTree_testCases;
     // End of variables declaration//GEN-END:variables
 
 }

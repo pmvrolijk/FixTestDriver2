@@ -1,8 +1,13 @@
 package nl.lamia.FixTools;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
@@ -13,7 +18,7 @@ public class Dictionary {
 
 	private static Logger logger = Logger.getLogger(Dictionary.class);
 	
-	static final String FILENAME="config/products.def";
+	static String FILENAME="config/products.def";
 	static private Dictionary productDictionary=null;
 	
 	private HashMap<String,HashMap<String,String>> dictionary=null;
@@ -21,13 +26,17 @@ public class Dictionary {
         private Vector<Vector<String>> rows=null;
 
         public static void main(String args[]) {
+            ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+            FILENAME=cm.getProperty("Dictionary.filename", "config/products.def");
             Dictionary d=Dictionary.getDict();
             System.out.println(d.toString());
         }
         
 	public static Dictionary getDict() {
 		if (productDictionary==null) {
-			productDictionary=new Dictionary();
+                        ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+                        FILENAME=cm.getProperty("Dictionary.filename", "config/products.def");
+                        productDictionary=new Dictionary();
 			productDictionary.loadDictionary(FILENAME);
 		}
 		return productDictionary;
@@ -91,6 +100,46 @@ public class Dictionary {
         public DefaultTableModel getTableModel () {
             DefaultTableModel tm=new DefaultTableModel(rows, headers);
             return tm;
+        }
+
+        /***
+         * Saves the dictionary from the table model after editing it
+         * @return true for success
+         */
+        public Boolean saveDictionary() {
+            Writer file=null;
+            try {
+                file = new OutputStreamWriter(new FileOutputStream(FILENAME));
+
+                String field;
+                for (int i=0;i<headers.size();i++) {
+                    field=headers.get(i);
+                    file.write(field.replace(',', ';'));
+                    if (i!=headers.size()-1) file.write(",");
+                }
+                file.write("\n");
+                for (Vector<String> row:rows) {
+                    for (int i=0;i<row.size();i++) {
+                        field=row.get(i);
+                        file.write(field.replace(',', ';'));
+                        if (i!=row.size()-1) file.write(",");
+                    }
+                    file.write("\n");
+                }
+            } catch (FileNotFoundException ex) {
+                logger.error("File not found to write Dictionary "+FILENAME, ex);
+                return false;
+            } catch (IOException ex) {
+                logger.error("Error writing Dictionary "+FILENAME, ex);
+                return false;
+            } finally {
+                try {file.close();} catch (Exception ex) {logger.error("error closing file", ex);}
+            }
+            return true;
+        }
+
+        public void reloadDictionary() {
+            this.loadDictionary(FILENAME);
         }
 }
 	

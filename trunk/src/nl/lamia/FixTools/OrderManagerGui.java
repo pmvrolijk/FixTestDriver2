@@ -11,6 +11,10 @@
 
 package nl.lamia.FixTools;
 
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  *
  * @author marcel
@@ -24,7 +28,19 @@ public class OrderManagerGui extends javax.swing.JFrame {
         initComponents();
         om=OrderManager.get();
         orderTable1.setModel(om.getOrderTable());
-        messageTable.setModel(om.getMessageTable("321"));
+        //setup listener for selection change
+        ListSelectionModel selModel=orderTable1.getSelectionModel();
+        selModel.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
+                ListSelectionModel rowSM = (ListSelectionModel)e.getSource();
+                int selectedIndex = rowSM.getMinSelectionIndex();
+                String clordid=(String)orderTable1.getModel().getValueAt(selectedIndex,0);
+                messageTable.setModel(om.getMessageTable(clordid));
+            }
+        });
+
+        messageTable.setModel(om.getMessageTable(""));
     }
 
     /** This method is called from within the constructor to
@@ -57,6 +73,7 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        orderTable1.setGridColor(new java.awt.Color(220, 220, 220));
         orderTable.setViewportView(orderTable1);
 
         jButtonRefresh.setText("Refresh");
@@ -84,6 +101,7 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        messageTable.setGridColor(new java.awt.Color(220, 220, 220));
         jScrollPane1.setViewportView(messageTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());

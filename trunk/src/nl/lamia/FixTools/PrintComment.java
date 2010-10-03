@@ -7,10 +7,15 @@ public class PrintComment implements TestStep {
 	private static Logger logger = Logger.getLogger(PrintComment.class);
 	
 	private String line;
-	
+	private MainWindow mainApp;
+
 	@Override
 	public Boolean run() throws Exception {
-		logger.info(line);
+                ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+                this.mainApp=cm.getMainApp();            
+
+                if (mainApp!=null) mainApp.appendTestOutput(line);
+                logger.info(line);
 		return true;
 	}
 	

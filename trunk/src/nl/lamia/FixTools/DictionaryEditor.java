@@ -12,6 +12,8 @@
 package nl.lamia.FixTools;
 
 import java.util.Vector;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -21,10 +23,12 @@ import javax.swing.table.DefaultTableModel;
  */
 public class DictionaryEditor extends javax.swing.JFrame {
 
+    private Dictionary d;
+
     /** Creates new form DictionaryEditor */
     public DictionaryEditor() {
         initComponents();
-        Dictionary d=Dictionary.getDict();
+        d=Dictionary.getDict();
         jTable1.setModel(d.getTableModel());
         this.setVisible(true);
     }
@@ -40,7 +44,7 @@ public class DictionaryEditor extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
+        jButtonSave = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
@@ -65,7 +69,12 @@ public class DictionaryEditor extends javax.swing.JFrame {
         jTable1.setShowGrid(true);
         jScrollPane1.setViewportView(jTable1);
 
-        jButton1.setText("Save");
+        jButtonSave.setText("Save");
+        jButtonSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSaveActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Discard");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -102,7 +111,7 @@ public class DictionaryEditor extends javax.swing.JFrame {
                         .add(365, 365, 365)
                         .add(jButton2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1))
+                        .add(jButtonSave))
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 621, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(28, Short.MAX_VALUE))
         );
@@ -113,7 +122,7 @@ public class DictionaryEditor extends javax.swing.JFrame {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 333, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton1)
+                    .add(jButtonSave)
                     .add(jButton2)
                     .add(jButton3)
                     .add(jButton4))
@@ -142,9 +151,21 @@ public class DictionaryEditor extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         //discard changes
-        this.setVisible( false );
+        d.reloadDictionary();
+        this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
+        Boolean result=d.saveDictionary();
+        if (!result) {
+            JOptionPane.showMessageDialog(this,"Error saving dictionary file.\nCheck files / settings.",
+                    "Error",JOptionPane.WARNING_MESSAGE);
+        } else {
+            this.setVisible(false);
+            this.dispose();
+        }
+    }//GEN-LAST:event_jButtonSaveActionPerformed
 
     /**
     * @param args the command line arguments
@@ -158,10 +179,10 @@ public class DictionaryEditor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButtonSave;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables

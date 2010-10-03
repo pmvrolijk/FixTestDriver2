@@ -19,7 +19,7 @@ public class ExpectMessageStep implements TestStep {
 	private quickfix.Message answer;
 	private String expect;
 	private Boolean received;
-	
+
 	@Override
 	public Boolean run() throws Exception {
 		engine.expectMessage(this);

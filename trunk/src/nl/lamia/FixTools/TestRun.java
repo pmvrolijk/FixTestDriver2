@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFrame;
 
 import org.apache.log4j.Logger;
 
@@ -41,6 +42,7 @@ public class TestRun {
 	private FixEngine fixEngine;
 	private String sessionName;
 	private String testname;
+        private MainWindow mainApp;
 	
 	/***
 	 * Constructor. Sets up the test case:
@@ -51,6 +53,9 @@ public class TestRun {
 	public TestRun(File file, FixEngine engine) {
 		this.fixEngine=engine;
 		this.testname=file.getName();
+                ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+                this.mainApp=cm.getMainApp();
+
 		try {
 			this.load(file);
 		} catch (IOException e) {
@@ -108,6 +113,7 @@ public class TestRun {
 	 */
 	public Boolean run() {
 		Boolean result=false;
+                if (mainApp!=null) mainApp.appendTestOutput("\nRunning test: "+testname);
 		logger.info("------------------------------------------------");
 		logger.info("- START test case: "+testname);
 		logger.info("- "+steps.size()+" steps");
@@ -125,7 +131,8 @@ public class TestRun {
 		logger.info("- END test case: "+testname);
 		logger.info("- SUCCES");
 		logger.info("------------------------------------------------");
-		return true;
+                if (mainApp!=null) mainApp.appendTestOutput(testname+" Succes");
+                return true;
 	}
 
 	public Boolean quickTest() {
