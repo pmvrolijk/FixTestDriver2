@@ -12,14 +12,18 @@
 package nl.lamia.FixTools;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JOptionPane;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author marcel
  */
 public class FileEditor extends javax.swing.JFrame {
+
+    private static Logger logger = Logger.getLogger(FileEditor.class);
 
     private String fileName=null;
 
@@ -78,12 +82,13 @@ public class FileEditor extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 14)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 14));
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
 
         jMenu1.setText("File");
 
+        jMenuItemReload.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItemReload.setText("Reload");
         jMenuItemReload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -92,6 +97,7 @@ public class FileEditor extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItemReload);
 
+        jMenuItemSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItemSave.setText("Save");
         jMenuItemSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -100,7 +106,8 @@ public class FileEditor extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItemSave);
 
-        jMenuItemDiscard.setText("Quit (discard)");
+        jMenuItemDiscard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemDiscard.setText("Quit");
         jMenuItemDiscard.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemDiscardActionPerformed(evt);
@@ -134,7 +141,22 @@ public class FileEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemReloadActionPerformed
 
     private void jMenuItemSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSaveActionPerformed
-        System.out.println("About to save "+fileName);
+        logger.info("About to save "+fileName);
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(fileName);
+            jTextArea1.write(writer);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this,
+            "Error saving file", "ERROR", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            if (writer != null) {
+            try {
+                writer.close();
+                } catch (IOException x) {
+                }
+            }
+        }
     }//GEN-LAST:event_jMenuItemSaveActionPerformed
 
     private void jMenuItemDiscardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemDiscardActionPerformed

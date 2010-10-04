@@ -12,9 +12,12 @@
 package nl.lamia.FixTools;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -60,13 +63,13 @@ public class MainWindow extends javax.swing.JFrame {
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) e
                     .getPath().getLastPathComponent();
-                System.out.println("You selected "+e.getPath()+" - "+ node);
+                //System.out.println("You selected "+e.getPath()+" - "+ node);
                 if (node.isLeaf()) {
                        testCasesToRun=node.getParent()+File.separator+ node.toString();
-                       System.out.println("To run: "+testCasesToRun);
+                       logger.debug("To run: "+testCasesToRun);
                 }else{
                        testCasesToRun=node.toString();
-                       System.out.println("To run: "+testCasesToRun);
+                       logger.debug("To run: "+testCasesToRun);
                 }
             }
         });
@@ -94,6 +97,8 @@ public class MainWindow extends javax.swing.JFrame {
         jButtonLogoff = new javax.swing.JButton();
         jButtonLogon = new javax.swing.JButton();
         jButtonReset = new javax.swing.JButton();
+        jButtonAddFile = new javax.swing.JButton();
+        jButtonDelete = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuLoadTestCases = new javax.swing.JMenuItem();
@@ -176,6 +181,20 @@ public class MainWindow extends javax.swing.JFrame {
         jButtonReset.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonResetActionPerformed(evt);
+            }
+        });
+
+        jButtonAddFile.setText("New File");
+        jButtonAddFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonAddFileActionPerformed(evt);
+            }
+        });
+
+        jButtonDelete.setText("Delete");
+        jButtonDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDeleteActionPerformed(evt);
             }
         });
 
@@ -270,29 +289,29 @@ public class MainWindow extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .add(155, 155, 155)
-                        .add(jLabel2))
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(464, 464, 464)
-                                .add(jButtonRunSelected)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jButton1))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(jButtonLogoff)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                    .add(jButtonLogon)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                    .add(jButtonReset))))))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel2)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jButtonAddFile)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonDelete)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 284, Short.MAX_VALUE)
+                        .add(jButtonRunSelected)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButton1))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jButtonLogoff)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                            .add(jButtonLogon)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                            .add(jButtonReset))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -300,8 +319,8 @@ public class MainWindow extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(jLabel1))
+                    .add(jLabel1)
+                    .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
@@ -318,7 +337,9 @@ public class MainWindow extends javax.swing.JFrame {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jButton1)
-                            .add(jButtonRunSelected)))
+                            .add(jButtonRunSelected)
+                            .add(jButtonAddFile)
+                            .add(jButtonDelete)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -446,6 +467,87 @@ public class MainWindow extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_jMenuItemViewLogActionPerformed
 
+    private void jButtonAddFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddFileActionPerformed
+        // Based on testCasesToRun hangen we een nieuwe file in.
+        // Deze initialiseren we met een commentaar regel, waarna we de editor openen.
+        String newFile="";
+        if (new File(testCasesToRun).isDirectory()) {
+            newFile=testCasesToRun;
+        } else {
+            newFile=new File(testCasesToRun).getParent();
+        }
+        String name=JOptionPane.showInputDialog(this, "Give the name of the new testfile\n"
+                , "newTest", JOptionPane.OK_CANCEL_OPTION);
+        if (name==null) return;
+        if (!name.endsWith(".def")) name+=".def";
+        newFile+=File.separator+name;
+        //test whether new file exists:
+        if (new File(newFile).exists()) {
+            JOptionPane.showMessageDialog(this, "File "+newFile+"\nalready exists, please try again."
+                ,"Error" ,JOptionPane.OK_OPTION);
+        }
+        System.out.println("New file to create "+newFile);
+        Boolean r=createFile(newFile, "#Example def file\niCONNECT <Session>\n"
+                + "I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI|\neDISCONNECT\n");
+        //On success reload the treeview and open the file for editing
+        if (r) {
+            loadTestCases(new File(testCasesRoot));
+            final String createdfile=""+newFile;
+            java.awt.EventQueue.invokeLater( new Runnable() {
+                public void run() {new FileEditor(createdfile).setVisible(true);}
+            });
+        } 
+    }//GEN-LAST:event_jButtonAddFileActionPerformed
+
+    private void jButtonDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDeleteActionPerformed
+        File toBeDeleted=new File(testCasesToRun);
+        if (toBeDeleted.isDirectory()) {
+            JOptionPane.showMessageDialog(this, "Deleting directories is not supported."
+            ,"Error" ,JOptionPane.OK_OPTION);
+            return;
+        }
+        int result=JOptionPane.showConfirmDialog(this, "Are you sure you want to permanently delete\n"
+                + " "+testCasesToRun+" ?\nThis cannot be undone.","Confirm delete",JOptionPane.OK_CANCEL_OPTION);
+        if (result!=JOptionPane.OK_OPTION) {
+            return;
+        }
+        logger.info("Deleting...... "+testCasesToRun);
+        if (!toBeDeleted.exists()) {
+            JOptionPane.showMessageDialog(this, "File cannot be found."
+                ,"Error" ,JOptionPane.OK_OPTION);
+            loadTestCases(new File(testCasesRoot));  //apparently there was a mismatch
+            return;
+        }
+        if (!toBeDeleted.canWrite()) {
+            JOptionPane.showMessageDialog(this, "File seems to be write protected, sorry."
+                ,"Error" ,JOptionPane.OK_OPTION);
+            return;
+        }
+        Boolean ok=toBeDeleted.delete();
+        if (ok) loadTestCases(new File(testCasesRoot));
+    }//GEN-LAST:event_jButtonDeleteActionPerformed
+
+    private Boolean createFile(String filename, String initLine) {
+        FileWriter writer = null;
+        Boolean succes=true;
+        try {
+            writer = new FileWriter(filename);
+            writer.write(initLine);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this,
+            "Error creating file "+filename, "ERROR", JOptionPane.ERROR_MESSAGE);
+            succes=false;
+        } finally {
+            if (writer != null) {
+            try {
+                writer.close();
+                } catch (IOException x) {
+                }
+            }
+        }
+        return succes;
+    }
+
     /**
     * @param args the command line arguments
     */
@@ -473,7 +575,7 @@ public class MainWindow extends javax.swing.JFrame {
         this.jTableEngineStatus.getColumnModel().getColumn(0).setMaxWidth(50);
         this.jTableEngineStatus.getColumnModel().getColumn(2).setMaxWidth(70);
         this.jTableEngineStatus.getColumnModel().getColumn(3).setMaxWidth(70);
-        this.jTableEngineStatus.addRowSelectionInterval(selected, selected);
+        if (selected!=-1) this.jTableEngineStatus.addRowSelectionInterval(selected, selected);
     }
 
     public void loadTestCases(File dir) {
@@ -520,6 +622,8 @@ public class MainWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButtonAddFile;
+    private javax.swing.JButton jButtonDelete;
     private javax.swing.JButton jButtonLogoff;
     private javax.swing.JButton jButtonLogon;
     private javax.swing.JButton jButtonReset;
