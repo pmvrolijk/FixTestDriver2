@@ -17,8 +17,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 import org.junit.runner.JUnitCore;
 
@@ -34,16 +36,20 @@ public class MainWindow extends javax.swing.JFrame {
     private ConfigurationManager cm;
     private String testCasesToRun;
     private String testCasesRoot;
+    private DefaultTableModel execStatusTbl;
 
     /** Creates new form MainWindow */
     public MainWindow() {
+        //register ourselves for callbacks
+        this.cm=ConfigurationManager.getConfigurationManager();
+        cm.setMainApp(this);
+
         fe=FixEngine.getFixEngine();
         initComponents();
 
-        this.cm=ConfigurationManager.getConfigurationManager();
-
-        //register ourselves for callbacks
-        cm.setMainApp(this);
+        //exec status:
+        execStatusTbl=new DefaultTableModel();
+        jTableEngineStatus.setModel(execStatusTbl);
 
         //Fill the testcases tree
         this.testCasesRoot=cm.getProperty("Application.testcases","testcases");
@@ -56,7 +62,7 @@ public class MainWindow extends javax.swing.JFrame {
                     .getPath().getLastPathComponent();
                 System.out.println("You selected "+e.getPath()+" - "+ node);
                 if (node.isLeaf()) {
-                       testCasesToRun=node.getParent()+"/"+ node.toString();
+                       testCasesToRun=node.getParent()+File.separator+ node.toString();
                        System.out.println("To run: "+testCasesToRun);
                 }else{
                        testCasesToRun=node.toString();
@@ -83,19 +89,34 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTestOutput = new javax.swing.JTextArea();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTableEngineStatus = new javax.swing.JTable();
+        jButtonLogoff = new javax.swing.JButton();
+        jButtonLogon = new javax.swing.JButton();
+        jButtonReset = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        jMenuSaveSettings = new javax.swing.JMenuItem();
         jMenuLoadTestCases = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jMenuItemStartFE = new javax.swing.JMenuItem();
+        jMenuItemStopFE = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jMenuSaveSettings = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItemOrderManager = new javax.swing.JMenuItem();
+        jMenuItemViewLog = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Fix Test Driver");
 
+        jTree_testCases.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTree_testCasesMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTree_testCases);
 
         jLabel1.setText("Testcase files");
@@ -124,15 +145,41 @@ public class MainWindow extends javax.swing.JFrame {
         jTestOutput.setBorder(javax.swing.BorderFactory.createTitledBorder("Test Output"));
         jScrollPane2.setViewportView(jTestOutput);
 
-        jMenu1.setText("File");
+        jTableEngineStatus.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jTableEngineStatus);
 
-        jMenuSaveSettings.setText("Save settings");
-        jMenuSaveSettings.addActionListener(new java.awt.event.ActionListener() {
+        jButtonLogoff.setText("logoff");
+        jButtonLogoff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuSaveSettingsActionPerformed(evt);
+                jButtonLogoffActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuSaveSettings);
+
+        jButtonLogon.setText("logon");
+        jButtonLogon.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonLogonActionPerformed(evt);
+            }
+        });
+
+        jButtonReset.setText("reset");
+        jButtonReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonResetActionPerformed(evt);
+            }
+        });
+
+        jMenu1.setText("File");
 
         jMenuLoadTestCases.setText("Load testcases...");
         jMenuLoadTestCases.addActionListener(new java.awt.event.ActionListener() {
@@ -141,6 +188,32 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuLoadTestCases);
+        jMenu1.add(jSeparator1);
+
+        jMenuItemStartFE.setText("Start engine");
+        jMenuItemStartFE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemStartFEActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItemStartFE);
+
+        jMenuItemStopFE.setText("Stop engine");
+        jMenuItemStopFE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemStopFEActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItemStopFE);
+        jMenu1.add(jSeparator2);
+
+        jMenuSaveSettings.setText("Save settings");
+        jMenuSaveSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuSaveSettingsActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuSaveSettings);
 
         jMenuItem2.setText("Quit");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -178,6 +251,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu3.add(jMenuItemOrderManager);
 
+        jMenuItemViewLog.setText("View log");
+        jMenuItemViewLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemViewLogActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItemViewLog);
+
         jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
@@ -188,43 +269,57 @@ public class MainWindow extends javax.swing.JFrame {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .add(111, 111, 111))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .add(155, 155, 155)
+                        .add(jLabel2))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(464, 464, 464)
                                 .add(jButtonRunSelected)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jButton1)))
-                        .addContainerGap())))
-            .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(jLabel1)
-                .addContainerGap(616, Short.MAX_VALUE))
+                                .add(jButton1))
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(jButtonLogoff)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                    .add(jButtonLogon)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                    .add(jButtonReset))))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(20, 20, 20)
-                .add(jLabel1)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .add(48, 48, 48)
-                        .add(jLabel2)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(54, 54, 54)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(jButtonLogoff)
+                                    .add(jButtonLogon)
+                                    .add(jButtonReset)))
+                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .add(12, 12, 12)
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jButton1)
                             .add(jButtonRunSelected)))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -252,7 +347,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         //Run all tests
         System.setProperty("testcase.dir",testCasesRoot);
-        fe.setParentWindow(this);
+        //fe.setParentWindow(this);
         Thread t=new Thread(new Runnable() {
             public void run() {
                     JUnitCore core=new JUnitCore();
@@ -301,6 +396,56 @@ public class MainWindow extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jMenuSaveSettingsActionPerformed
 
+    private void jTree_testCasesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTree_testCasesMouseClicked
+        if (evt.getClickCount()==2) {
+            int selRow = jTree_testCases.getRowForLocation(evt.getX(), evt.getY());
+            TreePath selPath = jTree_testCases.getPathForLocation(evt.getX(), evt.getY());
+            DefaultMutableTreeNode node=(DefaultMutableTreeNode)selPath.getLastPathComponent();
+            if (node.isLeaf()) {
+                final String filename=node.getParent()+File.separator+ node.toString();
+                System.out.println("Double click on "+filename);
+                java.awt.EventQueue.invokeLater( new Runnable() {
+                    public void run() {new FileEditor(filename).setVisible(true);}
+                });
+            }
+        }
+    }//GEN-LAST:event_jTree_testCasesMouseClicked
+
+    private void jButtonLogoffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoffActionPerformed
+        int sel=this.jTableEngineStatus.getSelectedRow();
+        if (sel==-1) return;
+        String session=(String)jTableEngineStatus.getModel().getValueAt(sel, 1);
+        fe.logout(session);
+    }//GEN-LAST:event_jButtonLogoffActionPerformed
+
+    private void jButtonLogonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogonActionPerformed
+        int sel=this.jTableEngineStatus.getSelectedRow();
+        if (sel==-1) return;
+        String session=(String)jTableEngineStatus.getModel().getValueAt(sel, 1);
+        fe.logon(session);
+    }//GEN-LAST:event_jButtonLogonActionPerformed
+
+    private void jButtonResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonResetActionPerformed
+        int sel=this.jTableEngineStatus.getSelectedRow();
+        if (sel==-1) return;
+        String session=(String)jTableEngineStatus.getModel().getValueAt(sel, 1);
+        fe.reset(session);
+    }//GEN-LAST:event_jButtonResetActionPerformed
+
+    private void jMenuItemStartFEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemStartFEActionPerformed
+        fe.start();
+    }//GEN-LAST:event_jMenuItemStartFEActionPerformed
+
+    private void jMenuItemStopFEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemStopFEActionPerformed
+        fe.close();
+    }//GEN-LAST:event_jMenuItemStopFEActionPerformed
+
+    private void jMenuItemViewLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemViewLogActionPerformed
+        java.awt.EventQueue.invokeLater( new Runnable() {
+             public void run() {new FileEditor("logs/testrun.log",false).setVisible(true);}
+        });
+    }//GEN-LAST:event_jMenuItemViewLogActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -320,8 +465,15 @@ public class MainWindow extends javax.swing.JFrame {
         this.jTestOutput.setText("");
     }
 
-    public void setFixStatus(String msg) {
-        jLabel2.setText(msg);
+    public void setFixStatus(DefaultTableModel tbl) {
+        logger.debug("Received FixEngine update:"+tbl.toString());
+        int selected=this.jTableEngineStatus.getSelectedRow();
+        this.execStatusTbl=tbl;
+        this.jTableEngineStatus.setModel(execStatusTbl);
+        this.jTableEngineStatus.getColumnModel().getColumn(0).setMaxWidth(50);
+        this.jTableEngineStatus.getColumnModel().getColumn(2).setMaxWidth(70);
+        this.jTableEngineStatus.getColumnModel().getColumn(3).setMaxWidth(70);
+        this.jTableEngineStatus.addRowSelectionInterval(selected, selected);
     }
 
     public void loadTestCases(File dir) {
@@ -368,6 +520,9 @@ public class MainWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButtonLogoff;
+    private javax.swing.JButton jButtonLogon;
+    private javax.swing.JButton jButtonReset;
     private javax.swing.JButton jButtonRunSelected;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -378,10 +533,17 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItemOrderManager;
+    private javax.swing.JMenuItem jMenuItemStartFE;
+    private javax.swing.JMenuItem jMenuItemStopFE;
+    private javax.swing.JMenuItem jMenuItemViewLog;
     private javax.swing.JMenuItem jMenuLoadTestCases;
     private javax.swing.JMenuItem jMenuSaveSettings;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JTable jTableEngineStatus;
     private javax.swing.JTextArea jTestOutput;
     private javax.swing.JTree jTree_testCases;
     // End of variables declaration//GEN-END:variables

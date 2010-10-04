@@ -2,11 +2,14 @@ package nl.lamia.FixTools;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 import java.util.regex.Pattern;
 import javax.swing.JFrame;
+import javax.swing.table.DefaultTableModel;
 
 import org.apache.log4j.Logger;
 
@@ -47,7 +50,7 @@ public class FixEngine implements Application {
 	private static Logger logger = Logger.getLogger(FixEngine.class);
 	
 	//Defaults
-	private static String fileName="config/FixEngine.cfg";
+	private static String fileName;
 	
 	private SessionSettings settings;
 	private MessageStoreFactory storeFactory;
@@ -76,6 +79,9 @@ public class FixEngine implements Application {
 	 * connections for untested sessions.
 	 */
 	public FixEngine() {
+            ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+            fileName=cm.getProperty("FixEngine.configuration", "config/FixEngine.cfg");
+            this.parentWindow=cm.getMainApp();
 	    try {
 			settings = new SessionSettings(new FileInputStream(fileName));
 		} catch (FileNotFoundException e) {
@@ -88,24 +94,27 @@ public class FixEngine implements Application {
 	    storeFactory = new FileStoreFactory(settings);
 	    logFactory = new FileLogFactory(settings);
 	    messageFactory = new DefaultMessageFactory();
+
 	    try {
 			socketInitiator = new SocketInitiator(this, storeFactory, settings, logFactory, messageFactory);
-			socketInitiator.start();
-			while (!socketInitiator.isLoggedOn()) {
-				Thread.sleep(50);
-			}
+			//socketInitiator.start();
+			//while (!socketInitiator.isLoggedOn()) {
+			//	Thread.sleep(50);
+			//}
 	    } catch (ConfigError e) {
 			logger.error("Configuration error starting Initiator (configuration file "+fileName+").");
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			logger.error("Ongeduld !");
-			e.printStackTrace();
-		}
-	    //Print created sessions
-	    sessionList=socketInitiator.getSessions();
+            //} catch (InterruptedException e) {
+            //		logger.error("Ongeduld !");
+            //		e.printStackTrace();
+            }
+
+            //Print created sessions
+            sessionList=socketInitiator.getSessions();
 	    for (int i=0;i<sessionList.size();i++) {
 	    	logger.debug("Session "+i+" "+sessionList.get(i).toString());
 	    }
+
 	    
 	    //Store for Expect messages:
 	    expectations=new HashSet<ExpectMessageStep>();
@@ -113,6 +122,14 @@ public class FixEngine implements Application {
 	
 	public void close() {
 		socketInitiator.stop();
+	}
+
+	public void start() {
+                try {
+                    socketInitiator.start();
+            } catch (ConfigError ex) {
+                logger.error("Configuration error in Fixengine cfg", ex);
+            }
 	}
 	
 	public Boolean sendMessage(Message message, String sessionName) {
@@ -132,27 +149,25 @@ public class FixEngine implements Application {
 	
 	@Override
 	public void onCreate(SessionID sessionId) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
     	public void onLogon(SessionID sessionId) {
-            if (this.parentWindow!=null) parentWindow.setFixStatus("Logged on");
+            //if (this.parentWindow!=null) parentWindow.setFixStatus("Logged on");
+            sessionList=socketInitiator.getSessions();
+            pushStatus();
 	}
 
 	@Override
 	public void onLogout(SessionID sessionId) {
-		// TODO Auto-generated method stub
-
+            sessionList=socketInitiator.getSessions();
+            pushStatus();
 	}
 
 	@Override
 	public void toAdmin(Message message, SessionID sessionId) {
 		logger.info("Admin Outgoing: "+message.toString().replace('\001', '|'));
-                try {
-                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: received");
-                } catch (Exception e) {}
+                pushStatus();
 	}
 
 	@Override
@@ -160,9 +175,7 @@ public class FixEngine implements Application {
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			RejectLogon {
 		logger.info("Admin Incoming: "+message.toString().replace('\001', '|'));
-                try {
-                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: sent");
-                } catch (Exception e) {}
+                pushStatus();
 	}
 
 	@Override
@@ -170,9 +183,7 @@ public class FixEngine implements Application {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
 		logger.info("Outgoing: "+message.toString().replace('\001', '|'));
-                try {
-                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: recvd ");
-                } catch (Exception e) {}
+                pushStatus();
 	}
 
 	@Override
@@ -182,9 +193,7 @@ public class FixEngine implements Application {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
 		logger.info("Incoming: "+message.toString().replace('\001', '|'));
-                try {
-                    if (this.parentWindow!=null) parentWindow.setFixStatus("msg: sent");
-                } catch (Exception e) {}
+                pushStatus();
 
 		//See whether somebody is interested:
 		for (ExpectMessageStep caller: expectations) {
@@ -200,6 +209,73 @@ public class FixEngine implements Application {
 		}
 	
 	}
+
+        private void pushStatus() {
+            if (this.parentWindow==null || this.sessionList==null) return;
+            Session ssn=null;
+            Vector<String> headers=new Vector<String>();
+            Vector<Vector<String>> rows=new Vector<Vector<String>>();
+            headers.add("up");
+            headers.add("Name");
+            headers.add("out");
+            headers.add("in");
+            for (int i=0;i<sessionList.size();i++) {
+                try {
+                    ssn=Session.lookupSession(sessionList.get(i));
+                } catch (Exception ex) {
+                    System.out.println("can't get session");
+                }
+                if (ssn!=null) {
+                    Vector<String> row=new Vector<String>();
+                    row.add(Boolean.toString(ssn.isLoggedOn()));
+                    row.add(sessionList.get(i).toString());
+                    row.add(Integer.toString(ssn.getExpectedSenderNum()));
+                    row.add(Integer.toString(ssn.getExpectedTargetNum()));
+                    rows.add(row);
+                }
+	    }
+            this.parentWindow.setFixStatus(new DefaultTableModel(rows, headers));
+        }
+
+        public void logout(String sessionName) {
+            Session ssn;
+            try {
+                ssn=Session.lookupSession(new SessionID(sessionName));
+            } catch (Exception ex) {
+                logger.warn("can't get session");
+                return;
+            }
+            ssn.logout("Requested logoff");
+            pushStatus();
+        }
+
+        public void logon(String sessionName) {
+            Session ssn;
+            try {
+                ssn=Session.lookupSession(new SessionID(sessionName));
+            } catch (Exception ex) {
+                logger.warn("can't get session");
+                return;
+            }
+            ssn.logon();
+            pushStatus();
+        }
+
+        public void reset(String sessionName) {
+            Session ssn;
+            try {
+                ssn=Session.lookupSession(new SessionID(sessionName));
+            } catch (Exception ex) {
+                logger.warn("can't get session");
+                return;
+            }
+            try {
+                ssn.reset();
+            } catch (IOException ex) {
+                logger.error("Error resetting "+sessionName, ex);
+            }
+            pushStatus();
+        }
 
 	/**
 	 * @param args

@@ -135,6 +135,7 @@ public class Dictionary {
             } finally {
                 try {file.close();} catch (Exception ex) {logger.error("error closing file", ex);}
             }
+            this.reloadDictionary();
             return true;
         }
 

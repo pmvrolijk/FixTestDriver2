@@ -11,6 +11,7 @@
 
 package nl.lamia.FixTools;
 
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,8 +36,10 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 if (e.getValueIsAdjusting()) return;
                 ListSelectionModel rowSM = (ListSelectionModel)e.getSource();
                 int selectedIndex = rowSM.getMinSelectionIndex();
-                String clordid=(String)orderTable1.getModel().getValueAt(selectedIndex,0);
-                messageTable.setModel(om.getMessageTable(clordid));
+                if (selectedIndex>=0) {
+                    String clordid=(String)orderTable1.getModel().getValueAt(selectedIndex,0);
+                    messageTable.setModel(om.getMessageTable(clordid));
+                }
             }
         });
 
@@ -58,6 +61,7 @@ public class OrderManagerGui extends javax.swing.JFrame {
         jButtonExit = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         messageTable = new javax.swing.JTable();
+        jButtonPurge = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Order manager");
@@ -104,6 +108,13 @@ public class OrderManagerGui extends javax.swing.JFrame {
         messageTable.setGridColor(new java.awt.Color(220, 220, 220));
         jScrollPane1.setViewportView(messageTable);
 
+        jButtonPurge.setText("Purge all");
+        jButtonPurge.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonPurgeActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -111,11 +122,12 @@ public class OrderManagerGui extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(orderTable)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(463, 463, 463)
+                            .add(jButtonPurge)
+                            .add(366, 366, 366)
                             .add(jButtonExit)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                             .add(jButtonRefresh))))
@@ -131,7 +143,8 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButtonRefresh)
-                    .add(jButtonExit))
+                    .add(jButtonExit)
+                    .add(jButtonPurge))
                 .addContainerGap())
         );
 
@@ -146,6 +159,16 @@ public class OrderManagerGui extends javax.swing.JFrame {
         orderTable1.setModel(om.getOrderTable());
     }//GEN-LAST:event_jButtonRefreshActionPerformed
 
+    private void jButtonPurgeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPurgeActionPerformed
+        int result=JOptionPane.showConfirmDialog(this, "All orders and messages will be purged !\n"
+                + "This cannot be undone.\nProceed ?", "Confirm purge", JOptionPane.YES_NO_OPTION);
+        if (result==JOptionPane.YES_OPTION) {
+            om.purgeOrders();
+            orderTable1.setModel(om.getOrderTable());
+            messageTable.setModel(om.getMessageTable(""));
+        }
+    }//GEN-LAST:event_jButtonPurgeActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -159,6 +182,7 @@ public class OrderManagerGui extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonExit;
+    private javax.swing.JButton jButtonPurge;
     private javax.swing.JButton jButtonRefresh;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable messageTable;

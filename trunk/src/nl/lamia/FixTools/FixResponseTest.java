@@ -97,7 +97,7 @@ public class FixResponseTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		fixEngine=FixEngine.getFixEngine();
-
+                //TODO add a start for the engine here if not under gui
                 ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
                 mainApp=cm.getMainApp();
                 if (mainApp!=null) mainApp.cleanTestOutput();

@@ -26,8 +26,8 @@ public class JunitListener extends RunListener {
 
     @Override
     public void testFailure(Failure f) {
-        mainApp.appendTestOutput(f.getMessage());
-        mainApp.appendTestOutput(f.getTrace());
+        mainApp.appendTestOutput("FAIL "+f.getMessage());
+        //mainApp.appendTestOutput(f.getTrace());
     }
 
     @Override

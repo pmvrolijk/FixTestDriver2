@@ -81,6 +81,10 @@ public class TestRun {
                 	if (temp.length<2) Assert.fail("No wait time specified, give time in ms.");
                 	int time=Integer.parseInt(temp[1]);
                 	steps.add(new WaitStep(time));
+                } else if (line.startsWith("RESET")) {
+                	String[] temp=line.split(" ");
+                	if (temp.length<2) Assert.fail("No testId specified, give clordid prefix.");
+                	steps.add(new ResetOrderStep(temp[1]));
                 } else if (line.startsWith("E")) {
                     steps.add(new ExpectMessageStep(line, fixEngine, sessionName));
                 } else if (line.matches("^i\\d*,?CONNECT.*")) {
@@ -131,7 +135,7 @@ public class TestRun {
 		logger.info("- END test case: "+testname);
 		logger.info("- SUCCES");
 		logger.info("------------------------------------------------");
-                if (mainApp!=null) mainApp.appendTestOutput(testname+" Succes");
+                if (mainApp!=null) mainApp.appendTestOutput("SUCCES "+testname);
                 return true;
 	}
 

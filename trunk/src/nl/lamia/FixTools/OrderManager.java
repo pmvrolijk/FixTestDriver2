@@ -182,5 +182,32 @@ public class OrderManager {
             return messageModel;
         }
 
+        /***
+         * Deletes all orders and messages from the database
+         */
+        public void purgeOrders() {
+                try {
+                    Statement stmt=dbconn.createStatement();
+                    stmt.execute("delete from orders");
+                    stmt.execute("delete from messages");
+                } catch (Exception ex) {
+                    logger.error("Exception", ex);
+                    logger.error("Error purging all orders.");
+                }
+	}
+
+        public void purgeTestCase(String caseId) {
+                try {
+                    Statement stmt=dbconn.createStatement();
+                    stmt.execute("delete from messages where clordid in (select clordid from orders where testid='"+caseId+"') ");
+                    stmt.execute("delete from orders where testid='"+caseId+"'");
+                } catch (Exception ex) {
+                    logger.error("Exception", ex);
+                    logger.error("Error deleting testcase "+caseId);
+                }
+	}
+
+
+
 	
 }
