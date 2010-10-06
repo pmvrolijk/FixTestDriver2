@@ -19,6 +19,14 @@
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItemFIXSettings">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Edit FIX Sessions"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemFIXSettingsActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItemStartFE">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Start engine"/>

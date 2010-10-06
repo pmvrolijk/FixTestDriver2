@@ -220,16 +220,18 @@ public class FileEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemDiscardActionPerformed
 
     private void jMenuItemEditFixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemEditFixActionPerformed
-        int caret=jTextArea1.getCaretPosition();
-        int line;
-        try {
-            line=jTextArea1.getLineOfOffset(caret);
-            jTextArea1.setSelectionStart(jTextArea1.getLineStartOffset(line)+1); //skip the I or E
-            jTextArea1.setSelectionEnd(jTextArea1.getLineEndOffset(line)-1);  //skip the lineend
-            //System.out.println("Selected line "+line);
-        } catch (BadLocationException e) {
-            logger.error("Error getting line from caret",e);
-            return;
+        if (jTextArea1.getSelectedText()==null) {
+            int caret=jTextArea1.getCaretPosition();
+            int line;
+            try {
+                line=jTextArea1.getLineOfOffset(caret);
+                jTextArea1.setSelectionStart(jTextArea1.getLineStartOffset(line)+1); //skip the I or E
+                jTextArea1.setSelectionEnd(jTextArea1.getLineEndOffset(line)-1);  //skip the lineend
+                //System.out.println("Selected line "+line);
+            } catch (BadLocationException e) {
+                logger.error("Error getting line from caret",e);
+                return;
+            }
         }
         String oldMsg=jTextArea1.getSelectedText();
         MessageEditor dlg=new MessageEditor(this, true, oldMsg, true);

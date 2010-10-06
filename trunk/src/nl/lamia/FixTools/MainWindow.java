@@ -103,6 +103,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuLoadTestCases = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jMenuItemFIXSettings = new javax.swing.JMenuItem();
         jMenuItemStartFE = new javax.swing.JMenuItem();
         jMenuItemStopFE = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
@@ -209,6 +210,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuLoadTestCases);
         jMenu1.add(jSeparator1);
+
+        jMenuItemFIXSettings.setText("Edit FIX Sessions");
+        jMenuItemFIXSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemFIXSettingsActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItemFIXSettings);
 
         jMenuItemStartFE.setText("Start engine");
         jMenuItemStartFE.addActionListener(new java.awt.event.ActionListener() {
@@ -541,6 +550,13 @@ public class MainWindow extends javax.swing.JFrame {
         dlg.showDialog();
     }//GEN-LAST:event_jMenuItemFixLookActionPerformed
 
+    private void jMenuItemFIXSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemFIXSettingsActionPerformed
+        final String fixSettings=cm.getProperty("FixEngine.configuration","config/FixEngine.cfg");
+        java.awt.EventQueue.invokeLater( new Runnable() {
+             public void run() {new FileEditor(fixSettings,true).setVisible(true);}
+        });
+    }//GEN-LAST:event_jMenuItemFIXSettingsActionPerformed
+
     private Boolean createFile(String filename, String initLine) {
         FileWriter writer = null;
         Boolean succes=true;
@@ -650,6 +666,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItemFIXSettings;
     private javax.swing.JMenuItem jMenuItemFixLook;
     private javax.swing.JMenuItem jMenuItemOrderManager;
     private javax.swing.JMenuItem jMenuItemStartFE;
