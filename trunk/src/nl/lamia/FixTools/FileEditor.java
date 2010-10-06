@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JOptionPane;
+import javax.swing.text.BadLocationException;
 import org.apache.log4j.Logger;
 
 /**
@@ -26,6 +27,7 @@ public class FileEditor extends javax.swing.JFrame {
     private static Logger logger = Logger.getLogger(FileEditor.class);
 
     private String fileName=null;
+    private Boolean wordwrap=false;
 
     /** Creates new form FileEditor */
     public FileEditor(String filename) {
@@ -78,6 +80,12 @@ public class FileEditor extends javax.swing.JFrame {
         jMenuItemSave = new javax.swing.JMenuItem();
         jMenuItemDiscard = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        jMenuItemCut = new javax.swing.JMenuItem();
+        jMenuItemCopy = new javax.swing.JMenuItem();
+        jMenuItemPaste = new javax.swing.JMenuItem();
+        jMenuItemEditFix = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        jMenuItemWrap = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -88,7 +96,7 @@ public class FileEditor extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
-        jMenuItemReload.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemReload.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.ALT_MASK));
         jMenuItemReload.setText("Reload");
         jMenuItemReload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -97,7 +105,7 @@ public class FileEditor extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItemReload);
 
-        jMenuItemSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
         jMenuItemSave.setText("Save");
         jMenuItemSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -106,7 +114,7 @@ public class FileEditor extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItemSave);
 
-        jMenuItemDiscard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemDiscard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.ALT_MASK));
         jMenuItemDiscard.setText("Quit");
         jMenuItemDiscard.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -118,7 +126,54 @@ public class FileEditor extends javax.swing.JFrame {
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
+
+        jMenuItemCut.setText("Cut");
+        jMenuItemCut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemCutActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemCut);
+
+        jMenuItemCopy.setText("Copy");
+        jMenuItemCopy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemCopyActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemCopy);
+
+        jMenuItemPaste.setText("Paste");
+        jMenuItemPaste.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemPasteActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemPaste);
+
+        jMenuItemEditFix.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItemEditFix.setText("Edit FIX msg...");
+        jMenuItemEditFix.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemEditFixActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemEditFix);
+
         jMenuBar1.add(jMenu2);
+
+        jMenu3.setText("View");
+
+        jMenuItemWrap.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItemWrap.setText("Toggle wrap");
+        jMenuItemWrap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemWrapActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItemWrap);
+
+        jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
 
@@ -164,6 +219,42 @@ public class FileEditor extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jMenuItemDiscardActionPerformed
 
+    private void jMenuItemEditFixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemEditFixActionPerformed
+        int caret=jTextArea1.getCaretPosition();
+        int line;
+        try {
+            line=jTextArea1.getLineOfOffset(caret);
+            jTextArea1.setSelectionStart(jTextArea1.getLineStartOffset(line)+1); //skip the I or E
+            jTextArea1.setSelectionEnd(jTextArea1.getLineEndOffset(line)-1);  //skip the lineend
+            //System.out.println("Selected line "+line);
+        } catch (BadLocationException e) {
+            logger.error("Error getting line from caret",e);
+            return;
+        }
+        String oldMsg=jTextArea1.getSelectedText();
+        MessageEditor dlg=new MessageEditor(this, true, oldMsg, true);
+        String newMsg=dlg.showDialog();
+        if (newMsg!=null) jTextArea1.replaceSelection(newMsg);
+        jTextArea1.setLineWrap(this.wordwrap); //it loses the wordwrap on replace selection ??
+    }//GEN-LAST:event_jMenuItemEditFixActionPerformed
+
+    private void jMenuItemWrapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemWrapActionPerformed
+        if (wordwrap) {wordwrap=false;} else {wordwrap=true;}
+        jTextArea1.setLineWrap(wordwrap);
+    }//GEN-LAST:event_jMenuItemWrapActionPerformed
+
+    private void jMenuItemCutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCutActionPerformed
+        jTextArea1.cut();
+    }//GEN-LAST:event_jMenuItemCutActionPerformed
+
+    private void jMenuItemCopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCopyActionPerformed
+        jTextArea1.copy();
+    }//GEN-LAST:event_jMenuItemCopyActionPerformed
+
+    private void jMenuItemPasteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPasteActionPerformed
+        jTextArea1.paste();
+    }//GEN-LAST:event_jMenuItemPasteActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -178,10 +269,16 @@ public class FileEditor extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItemCopy;
+    private javax.swing.JMenuItem jMenuItemCut;
     private javax.swing.JMenuItem jMenuItemDiscard;
+    private javax.swing.JMenuItem jMenuItemEditFix;
+    private javax.swing.JMenuItem jMenuItemPaste;
     private javax.swing.JMenuItem jMenuItemReload;
     private javax.swing.JMenuItem jMenuItemSave;
+    private javax.swing.JMenuItem jMenuItemWrap;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables

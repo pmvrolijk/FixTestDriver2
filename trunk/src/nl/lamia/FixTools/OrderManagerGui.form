@@ -122,6 +122,12 @@
               <Color blue="dc" green="dc" red="dc" type="rgb"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="messageTableMouseClicked"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="messageTable=new javax.swing.JTable()&#xa;{&#xa;  @Override&#xa;  public boolean isCellEditable(int row,int col) {&#xa;     return false;&#xa;  }&#xa;}"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

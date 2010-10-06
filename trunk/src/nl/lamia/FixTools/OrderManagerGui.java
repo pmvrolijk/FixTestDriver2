@@ -12,6 +12,7 @@
 package nl.lamia.FixTools;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -39,6 +40,8 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 if (selectedIndex>=0) {
                     String clordid=(String)orderTable1.getModel().getValueAt(selectedIndex,0);
                     messageTable.setModel(om.getMessageTable(clordid));
+                    messageTable.getColumnModel().getColumn(0).setWidth(150);
+                    messageTable.getColumnModel().getColumn(1).setWidth(250);
                 }
             }
         });
@@ -60,7 +63,13 @@ public class OrderManagerGui extends javax.swing.JFrame {
         jButtonRefresh = new javax.swing.JButton();
         jButtonExit = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        messageTable = new javax.swing.JTable();
+        messageTable = messageTable=new javax.swing.JTable()
+        {
+            @Override
+            public boolean isCellEditable(int row,int col) {
+                return false;
+            }
+        };
         jButtonPurge = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -106,6 +115,11 @@ public class OrderManagerGui extends javax.swing.JFrame {
             }
         ));
         messageTable.setGridColor(new java.awt.Color(220, 220, 220));
+        messageTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                messageTableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(messageTable);
 
         jButtonPurge.setText("Purge all");
@@ -168,6 +182,16 @@ public class OrderManagerGui extends javax.swing.JFrame {
             messageTable.setModel(om.getMessageTable(""));
         }
     }//GEN-LAST:event_jButtonPurgeActionPerformed
+
+    private void messageTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_messageTableMouseClicked
+        if (evt.getClickCount()==2) {
+            JTable target = (JTable)evt.getSource();
+            int row = target.getSelectedRow();
+            String msg=(String)target.getValueAt(row, 2);
+            MessageEditor dlg=new MessageEditor(this, true, msg, false);
+            dlg.showDialog();
+        }
+    }//GEN-LAST:event_messageTableMouseClicked
 
     /**
     * @param args the command line arguments

@@ -112,6 +112,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu3 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItemOrderManager = new javax.swing.JMenuItem();
+        jMenuItemFixLook = new javax.swing.JMenuItem();
         jMenuItemViewLog = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -270,6 +271,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu3.add(jMenuItemOrderManager);
 
+        jMenuItemFixLook.setText("Analyse FIX msg...");
+        jMenuItemFixLook.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemFixLookActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItemFixLook);
+
         jMenuItemViewLog.setText("View log");
         jMenuItemViewLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -424,7 +433,7 @@ public class MainWindow extends javax.swing.JFrame {
             DefaultMutableTreeNode node=(DefaultMutableTreeNode)selPath.getLastPathComponent();
             if (node.isLeaf()) {
                 final String filename=node.getParent()+File.separator+ node.toString();
-                System.out.println("Double click on "+filename);
+                //System.out.println("Double click on "+filename);
                 java.awt.EventQueue.invokeLater( new Runnable() {
                     public void run() {new FileEditor(filename).setVisible(true);}
                 });
@@ -526,6 +535,11 @@ public class MainWindow extends javax.swing.JFrame {
         Boolean ok=toBeDeleted.delete();
         if (ok) loadTestCases(new File(testCasesRoot));
     }//GEN-LAST:event_jButtonDeleteActionPerformed
+
+    private void jMenuItemFixLookActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemFixLookActionPerformed
+        MessageEditor dlg=new MessageEditor(this, true, "<Paste your message>", true);
+        dlg.showDialog();
+    }//GEN-LAST:event_jMenuItemFixLookActionPerformed
 
     private Boolean createFile(String filename, String initLine) {
         FileWriter writer = null;
@@ -636,6 +650,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItemFixLook;
     private javax.swing.JMenuItem jMenuItemOrderManager;
     private javax.swing.JMenuItem jMenuItemStartFE;
     private javax.swing.JMenuItem jMenuItemStopFE;
