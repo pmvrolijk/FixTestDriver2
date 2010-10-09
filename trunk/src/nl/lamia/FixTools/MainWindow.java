@@ -25,6 +25,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.runner.JUnitCore;
 
 /**
@@ -34,6 +35,9 @@ import org.junit.runner.JUnitCore;
 public class MainWindow extends javax.swing.JFrame {
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
+    static {
+	PropertyConfigurator.configure("config/log4j.properties");
+    }
 
     private FixEngine fe;
     private ConfigurationManager cm;
@@ -104,6 +108,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuLoadTestCases = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jMenuItemFIXSettings = new javax.swing.JMenuItem();
+        jMenuItemReload = new javax.swing.JMenuItem();
         jMenuItemStartFE = new javax.swing.JMenuItem();
         jMenuItemStopFE = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
@@ -147,7 +152,7 @@ public class MainWindow extends javax.swing.JFrame {
         jTestOutput.setBackground(new java.awt.Color(220, 220, 220));
         jTestOutput.setColumns(20);
         jTestOutput.setEditable(false);
-        jTestOutput.setFont(new java.awt.Font("Courier New", 0, 12)); // NOI18N
+        jTestOutput.setFont(new java.awt.Font("Courier New", 0, 12));
         jTestOutput.setRows(5);
         jTestOutput.setBorder(javax.swing.BorderFactory.createTitledBorder("Test Output"));
         jScrollPane2.setViewportView(jTestOutput);
@@ -218,6 +223,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItemFIXSettings);
+
+        jMenuItemReload.setText("Reload engine");
+        jMenuItemReload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemReloadActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItemReload);
 
         jMenuItemStartFE.setText("Start engine");
         jMenuItemStartFE.addActionListener(new java.awt.event.ActionListener() {
@@ -557,6 +570,12 @@ public class MainWindow extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_jMenuItemFIXSettingsActionPerformed
 
+    private void jMenuItemReloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemReloadActionPerformed
+        fe.reloadFixEngine();
+        JOptionPane.showMessageDialog(this, "Fixengine settings reloaded from disk\nEngine is currently stopped;\n"
+                + "use File - start engine to start.","FixEngine",JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jMenuItemReloadActionPerformed
+
     private Boolean createFile(String filename, String initLine) {
         FileWriter writer = null;
         Boolean succes=true;
@@ -669,6 +688,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItemFIXSettings;
     private javax.swing.JMenuItem jMenuItemFixLook;
     private javax.swing.JMenuItem jMenuItemOrderManager;
+    private javax.swing.JMenuItem jMenuItemReload;
     private javax.swing.JMenuItem jMenuItemStartFE;
     private javax.swing.JMenuItem jMenuItemStopFE;
     private javax.swing.JMenuItem jMenuItemViewLog;

@@ -56,19 +56,29 @@ public class OrderManager {
                 //create table orders (clordid varchar(20) primary key, testid varchar(20), insert_time datetime, status varchar(30) )
                 //create table messages (clordid varchar(20), insert_time datetime, fix_message varchar(256) )
 
-                //See wheter there is already a table
+                //See whether there is already an order table
                 try {
                     Statement stmt=dbconn.createStatement();
                     stmt.execute("select * from orders");
                 } catch (Exception ex) {
-                    logger.error("Exception", ex);
-                    logger.error("Cannot check table existence, please initialize tables");
+                    try {
+                        Statement stmtNew=dbconn.createStatement();
+                        stmtNew.execute("create table orders (clordid varchar(20) primary key,"
+                                + " testid varchar(20), insert_time datetime, status varchar(30) )");
+                        stmtNew.execute("create table messages (clordid varchar(20),"
+                                + " insert_time datetime, fix_message varchar(2048) )");
+                        logger.info("Created new tables in database");
+                    } catch (Exception ex2) {
+                        logger.error("Exception", ex2);
+                        logger.error("Cannot check/create table existence, please initialize tables");
+                    }
                 }
 
 	}
 	
 	public void addMessage(Message message) {
 		//TODO if 35=d then add a key plus new arraylist and first message. If 8 or 9 add new message
+                String origUpdStatus=null, updStatus=null;
                 String clordid, origClordid, msgType, orderStatus;
                 try {clordid=message.getString(11);} catch (FieldNotFound ex) {clordid="";}
                 try {origClordid=message.getString(41);} catch (FieldNotFound ex) {origClordid="";}
@@ -85,19 +95,59 @@ public class OrderManager {
                     }
                 }
                 logger.info("Order: "+clordid+" origClordid: "+origClordid+" msgtype: "+msgType+" status: "+orderStatus+".");
+
+                //Outgoing messages
                 if (msgType.equals("D")) {
+                    updStatus="NewSingle";
+                }
+                if (msgType.equals("AB")) {
+                    updStatus="NewMulti";
+                }
+                if (msgType.equals("G")) {
+                    updStatus="Replace";
+                    origUpdStatus="ReplaceRequest";
+                }
+                if (msgType.equals("F")) {
+                    updStatus="Cancel";
+                    origUpdStatus="CancelRequest";
+                }
+                if (updStatus!=null) {
                     try {
                         Statement stmt=dbconn.createStatement();
-                        stmt.execute("update orders set status='SINGLE' where clordid='"+clordid+"'");
+                        stmt.execute("update orders set status='"+updStatus+"' where clordid='"+clordid+"'");
                     } catch (Exception ex) {
                         logger.error("Exception", ex);
                         logger.error("Error updating order.");
                     }
                 }
+                if (origUpdStatus!=null) {
+                    try {
+                        Statement stmt=dbconn.createStatement();
+                        stmt.execute("update orders set status='"+origUpdStatus+"' where clordid='"+origClordid+"'");
+                    } catch (Exception ex) {
+                        logger.error("Exception", ex);
+                        logger.error("Error updating order.");
+                    }
+                }
+
+                //Incoming messages cause status updates
                 if (msgType.equals("8") && !orderStatus.equals("")) {
                     try {
                         Statement stmt=dbconn.createStatement();
                         stmt.execute("update orders set status='"+orderStatus+"' where clordid='"+clordid+"'");
+                    } catch (Exception ex) {
+                        logger.error("Exception", ex);
+                        logger.error("Error updating order.");
+                    }
+                }
+                //Rejected cncels or replaces
+                //Fix 4.0 only carries the clordid, fix >4.1 has origlordid and new orderstatus
+                if (msgType.equals("9")) {
+                    try {
+                        Statement stmt=dbconn.createStatement();
+                        stmt.execute("update orders set status='CancRej' where clordid='"+clordid+"'");
+                        if (!origClordid.equals(""))
+                            stmt.execute("update orders set status='CancRej' where clordid='"+origClordid+"'");
                     } catch (Exception ex) {
                         logger.error("Exception", ex);
                         logger.error("Error updating order.");

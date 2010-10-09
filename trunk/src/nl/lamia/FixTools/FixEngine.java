@@ -69,6 +69,15 @@ public class FixEngine implements Application {
             return fixengine;
         }
 
+        /***
+         * Reload the configuration settings and recreate the engine
+         */
+        public void reloadFixEngine() {
+            fixengine.close();
+            fixengine.load();
+        }
+
+        
         public void setParentWindow(MainWindow window) {
             this.parentWindow=window;
         }
@@ -79,6 +88,12 @@ public class FixEngine implements Application {
 	 * connections for untested sessions.
 	 */
 	public FixEngine() {
+	    this.load();  //read config and initialize
+	    //Store for Expect messages:
+	    expectations=new HashSet<ExpectMessageStep>();
+	}
+
+        public void load() {
             ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
             fileName=cm.getProperty("FixEngine.configuration", "config/FixEngine.cfg");
             this.parentWindow=cm.getMainApp();
@@ -97,29 +112,18 @@ public class FixEngine implements Application {
 
 	    try {
 			socketInitiator = new SocketInitiator(this, storeFactory, settings, logFactory, messageFactory);
-			//socketInitiator.start();
-			//while (!socketInitiator.isLoggedOn()) {
-			//	Thread.sleep(50);
-			//}
 	    } catch (ConfigError e) {
 			logger.error("Configuration error starting Initiator (configuration file "+fileName+").");
 			e.printStackTrace();
-            //} catch (InterruptedException e) {
-            //		logger.error("Ongeduld !");
-            //		e.printStackTrace();
             }
 
             //Print created sessions
             sessionList=socketInitiator.getSessions();
 	    for (int i=0;i<sessionList.size();i++) {
-	    	logger.debug("Session "+i+" "+sessionList.get(i).toString());
+	    	logger.info("Session "+i+" "+sessionList.get(i).toString());
 	    }
+        }
 
-	    
-	    //Store for Expect messages:
-	    expectations=new HashSet<ExpectMessageStep>();
-	}
-	
 	public void close() {
 		socketInitiator.stop();
 	}
