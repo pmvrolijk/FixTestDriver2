@@ -11,13 +11,18 @@
 
 package nl.lamia.FixTools;
 
+import java.awt.Dimension;
+import java.awt.HeadlessException;
+import java.awt.ScrollPane;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -33,6 +38,8 @@ import org.junit.runner.JUnitCore;
  * @author marcel
  */
 public class MainWindow extends javax.swing.JFrame {
+
+    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.26\n2010/10/09";
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
     static {
@@ -120,6 +127,9 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItemOrderManager = new javax.swing.JMenuItem();
         jMenuItemFixLook = new javax.swing.JMenuItem();
         jMenuItemViewLog = new javax.swing.JMenuItem();
+        jMenu4 = new javax.swing.JMenu();
+        jMenuItemHelp = new javax.swing.JMenuItem();
+        jMenuItemAbout = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Fix Test Driver");
@@ -310,6 +320,26 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu3.add(jMenuItemViewLog);
 
         jMenuBar1.add(jMenu3);
+
+        jMenu4.setText("Help");
+
+        jMenuItemHelp.setText("Manual");
+        jMenuItemHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemHelpActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItemHelp);
+
+        jMenuItemAbout.setText("About");
+        jMenuItemAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemAboutActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItemAbout);
+
+        jMenuBar1.add(jMenu4);
 
         setJMenuBar(jMenuBar1);
 
@@ -576,6 +606,35 @@ public class MainWindow extends javax.swing.JFrame {
                 + "use File - start engine to start.","FixEngine",JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jMenuItemReloadActionPerformed
 
+    private void jMenuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAboutActionPerformed
+        JOptionPane.showMessageDialog(this, VERSION,"About",JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jMenuItemAboutActionPerformed
+
+    private void jMenuItemHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemHelpActionPerformed
+        JEditorPane help;
+        File file=new File("resources/Help.html");
+        try {
+            help=new JEditorPane("file:///"+file.getAbsolutePath()) {
+                @Override
+                public boolean getScrollableTracksViewportWidth() { //Workaround for Java bug: Impossible to set max width on
+                    return true;                                    //an editor pane: html <p> run in one long line.
+                }
+            };
+            help.setEditable(false);
+        } catch (IOException e) {
+            logger.error("Can't load help file", e);
+            return;
+        }
+        JScrollPane scroll;
+        try {scroll=new JScrollPane(help, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);}
+        catch (HeadlessException e) {
+            logger.error("Can't create a scroll pane ??",e);
+            return;
+        }
+        scroll.setPreferredSize(new Dimension(800,600));
+        JOptionPane.showMessageDialog(this, scroll,"Help",JOptionPane.PLAIN_MESSAGE);
+    }//GEN-LAST:event_jMenuItemHelpActionPerformed
+
     private Boolean createFile(String filename, String initLine) {
         FileWriter writer = null;
         Boolean succes=true;
@@ -682,11 +741,14 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItemAbout;
     private javax.swing.JMenuItem jMenuItemFIXSettings;
     private javax.swing.JMenuItem jMenuItemFixLook;
+    private javax.swing.JMenuItem jMenuItemHelp;
     private javax.swing.JMenuItem jMenuItemOrderManager;
     private javax.swing.JMenuItem jMenuItemReload;
     private javax.swing.JMenuItem jMenuItemStartFE;

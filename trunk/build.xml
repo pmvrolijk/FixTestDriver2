@@ -13,6 +13,7 @@
 
     <import file="nbproject/profiler-build-impl.xml"/>    <!--
 
+
     There exist several targets which are by default empty and which can be 
     used for execution of your tasks. These targets are usually executed 
     before and after some main targets. They are: 
@@ -72,4 +73,24 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+        <target name="-post-jar">
+            <!-- finish the dist folder -->
+            <mkdir dir="${dist.dir}/data"/>            <!-- Persistence directory -->
+            <mkdir dir="${dist.dir}/data/FixEngine"/>  <!--   for FixEngine-->
+            <mkdir dir="${dist.dir}/data/hsqldb"/>     <!--   for hsql database -->
+            <mkdir dir="${dist.dir}/logs"/>            <!-- Empty log files directory -->
+            <copy todir="${dist.dir}/config">
+                <fileset dir="config"/>
+            </copy>
+            <copy todir="${dist.dir}/resources">
+                <fileset dir="resources"/>
+            </copy>
+            <copy todir="${dist.dir}/testcases">
+                <fileset dir="testcases"/>
+            </copy>
+            <copy todir="${dist.dir}">
+                <fileset file="runDbGui.sh"/>
+            </copy>
+        </target>
 </project>
