@@ -14,6 +14,8 @@ package nl.lamia.FixTools;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import org.apache.log4j.Logger;
@@ -25,9 +27,11 @@ import org.apache.log4j.Logger;
 public class FileEditor extends javax.swing.JFrame {
 
     private static Logger logger = Logger.getLogger(FileEditor.class);
+    private final static Pattern FIXMSG=Pattern.compile("8=FIX[^$]*?\\|10=[0-9]{3}[|]?"); //non greedy match
 
     private String fileName=null;
     private Boolean wordwrap=false;
+    private Boolean write=true;
 
     /** Creates new form FileEditor */
     public FileEditor(String filename) {
@@ -42,7 +46,9 @@ public class FileEditor extends javax.swing.JFrame {
         this.fileName=""+filename;
         loadFile(fileName);
         this.setTitle(fileName);
+        this.write=write;
         this.jMenuItemSave.setEnabled(write);
+        if (!write) this.jMenuItemEditFix.setText("Show Fix Msg...");
     }
 
     private void loadFile(String filename) {
@@ -222,11 +228,16 @@ public class FileEditor extends javax.swing.JFrame {
     private void jMenuItemEditFixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemEditFixActionPerformed
         if (jTextArea1.getSelectedText()==null) {
             int caret=jTextArea1.getCaretPosition();
-            int line;
+            int line, linestart, start, end;
             try {
+                Matcher m=FIXMSG.matcher(jTextArea1.getText());
                 line=jTextArea1.getLineOfOffset(caret);
-                jTextArea1.setSelectionStart(jTextArea1.getLineStartOffset(line)+1); //skip the I or E
-                jTextArea1.setSelectionEnd(jTextArea1.getLineEndOffset(line)-1);  //skip the lineend
+                linestart=jTextArea1.getLineStartOffset(line);
+                if (!m.find(linestart)) return;
+                start=m.start();
+                end=m.end();
+                jTextArea1.setSelectionStart(start); //skip the I or E
+                jTextArea1.setSelectionEnd(end);  //skip the lineend
                 //System.out.println("Selected line "+line);
             } catch (BadLocationException e) {
                 logger.error("Error getting line from caret",e);
@@ -234,9 +245,9 @@ public class FileEditor extends javax.swing.JFrame {
             }
         }
         String oldMsg=jTextArea1.getSelectedText();
-        MessageEditor dlg=new MessageEditor(this, true, oldMsg, true);
+        MessageEditor dlg=new MessageEditor(this, true, oldMsg, write);
         String newMsg=dlg.showDialog();
-        if (newMsg!=null) jTextArea1.replaceSelection(newMsg);
+        if (newMsg!=null && !newMsg.equals("") && write) jTextArea1.replaceSelection(newMsg);
         jTextArea1.setLineWrap(this.wordwrap); //it loses the wordwrap on replace selection ??
     }//GEN-LAST:event_jMenuItemEditFixActionPerformed
 

@@ -21,7 +21,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItemFIXSettings">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Edit FIX Sessions"/>
+                <Property name="text" type="java.lang.String" value="Edit FIX Sessions..."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemFIXSettingsActionPerformed"/>
@@ -75,6 +75,16 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItemTestcaseEdit">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Edit test case..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemTestcaseEditActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu3">
           <Properties>
@@ -108,10 +118,18 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItemViewLog">
               <Properties>
-                <Property name="text" type="java.lang.String" value="View log"/>
+                <Property name="text" type="java.lang.String" value="View log..."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemViewLogActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItemShowFixLog">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Show FIX log..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemShowFixLogActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

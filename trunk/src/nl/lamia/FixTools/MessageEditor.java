@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 import org.apache.log4j.Logger;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
+import quickfix.FieldType;
 
 /**
  *
@@ -116,7 +117,8 @@ public class MessageEditor extends javax.swing.JDialog {
                 }
                 row.add(value); //Value
                 if (dd!=null) {
-                    row.add(dd.getFieldTypeEnum(tagnr).getName());
+                    FieldType ft=dd.getFieldTypeEnum(tagnr);
+                    if (ft!=null) row.add(ft.getName());
                 } else {                //Datatype
                     row.add("unknown");
                 }

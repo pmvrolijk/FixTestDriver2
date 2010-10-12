@@ -38,15 +38,22 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 ListSelectionModel rowSM = (ListSelectionModel)e.getSource();
                 int selectedIndex = rowSM.getMinSelectionIndex();
                 if (selectedIndex>=0) {
+                    int col0=messageTable.getColumnModel().getColumn(0).getWidth();
+                    int col1=messageTable.getColumnModel().getColumn(1).getWidth();
+                    int col2=messageTable.getColumnModel().getColumn(2).getWidth();
                     String clordid=(String)orderTable1.getModel().getValueAt(selectedIndex,0);
                     messageTable.setModel(om.getMessageTable(clordid));
-                    messageTable.getColumnModel().getColumn(0).setWidth(150);
-                    messageTable.getColumnModel().getColumn(1).setWidth(250);
+                    messageTable.getColumnModel().getColumn(0).setPreferredWidth(col0);
+                    messageTable.getColumnModel().getColumn(1).setPreferredWidth(col1);
+                    messageTable.getColumnModel().getColumn(2).setPreferredWidth(col2);
                 }
             }
         });
 
         messageTable.setModel(om.getMessageTable(""));
+        messageTable.getColumnModel().getColumn(0).setPreferredWidth(110);
+        messageTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        messageTable.getColumnModel().getColumn(2).setPreferredWidth(500);
     }
 
     /** This method is called from within the constructor to
@@ -114,6 +121,7 @@ public class OrderManagerGui extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        messageTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         messageTable.setGridColor(new java.awt.Color(220, 220, 220));
         messageTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

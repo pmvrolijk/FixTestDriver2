@@ -15,23 +15,137 @@ and open the template in the editor.
       <p>This tool allows you to connect to a number of fix sessions and run predetermined
       test cases. The test cases are organized in a hierarchical set of folders and can be
       run individually or recursively by folder. The orders, the messages and the order status
-      are kept in a persistent database so multi day tests are possible.
-      The tests are run under the test framework JUnit4. </p>
+      are kept in a persistent database so multi day tests are possible.</p>
+      <p>The tests are run under the open source test framework JUnit4 and the persistence of
+      orders is done using the hsql database. Fix connectivity and data dictionaries are implemented
+      using QuickFixJ. Logging is Log4J, log settings can therefore be managed in the log4j.properties file
+      (in the config directory).</p>
 
       <br>  <h2>Main window</h2>
       <img src="mainwindow.png" alt="Main window layout"/>
       <p>In the main window on the left the test cases are presented in a tree view. Selecting a
        test case or folder by clicking on it selects and clicking on the run selected button
       in the lower right runs it. Run all will run all tests in the view. Double clicking a test case
-      opens an editor where the test case can be edited. New test cases can be added with the button labeled plus,
-      the selected test case can be deleted using the button labeled minus.</p>
+      opens an editor where the test case can be edited. New test cases can be added with the button labeled New file,
+      the selected test case can be deleted using the button labeled Delete.</p>
       <p>At the top of the application the current status for the fix sessions is shown. The selected session can
       be logged on, off or reset using the buttons. To start any sessions the fix engine needs to be started
       through the file menu.</p>
 
       <br>  <h2>Menus</h2>
+      <h3>File</h3>
+      <dl>
+          <dt>Load testcases...</dt><dd>load a new base directory containing test cases.</dd>
+          <dt>Edit FIX Sessions</dt><dd>Edit the config file containing the Fix sessions. Temporarily
+          disable sessions by adding a semicolon before all of its lines.</dd>
+          <dt>Reload engine</dt><dd>After changing the Fix settings, you need to reload the engine for it to have any effect.</dd>
+          <dt>Start engine</dt><dd>Start the engine, connects all sessions.</dd>
+          <dt>Stop engine</dt><dd>Stop the Fix engine, closes all sessions.</dd>
+          <dt>Save settings</dt><dd>Currently saves just the location of the test cases opened.</dd>
+          <dt>Quit</dt><dd>So long and thanks for all the fish.</dd>
+      </dl>
+      <h3>Edit</h3>
+      <dl>
+          <dt>Edit test case</dt><dd>Open an editor for the selected test case.</dd>
+      </dl>
+      <h3>Tools</h3>
+      <dl>
+          <dt>Edit dictionary...</dt><dd>Show the editor to update, add or delete dictionary entries.</dd>
+          <dt>Order Manager...</dt><dd>Show the Order manager to see orders and messages received.</dd>
+          <dt>Analyze FIX msg...</dt><dd>Show Fix dialog to quickly analyze a Fix message (from a log e.g.)</dd>
+          <dt>View log</dt><dd>Show the application log, including a log for all test cases.</dd>
+          <dt>Show FIX log</dt><dd>Show all Fix messages sent or received in this session.</dd>
+      </dl>
+      <h3>Help</h3>
+      <dl>
+          <dt>Manual</dt><dd>Show this html page...</dd>
+          <dt>About</dt><dd>Show version info.</dd>
+      </dl>
+
       <br>  <h2>Test case def format</h2>
+      <p>Each test case file consists of a number of steps, one per line that are processed
+      in turn. The start of the line determines the type of test step or action. Currently the types available are:</p>
+      <dl>
+          <dt>iCONNECT <i>session</i> </dt><dd> The session to use for this test case. You can have multiple sessions active at the same
+          time. The session name is found in the session manager table.</dd>
+          <dt># </dt><dd> print step, used to comment on the test at hand. Will be printed at run time.</dd>
+          <dt>I </dt><dd> Initiate a Fix message, i.e. send it to the session defined in the iCONNECT.</dd>
+          <dt>E </dt><dd> Expect a Fix message. The next message to come in will be compared to this line.
+          Datetime fields, checksum and length fields are not taken into consideration. Other fields are compared
+          literally. Fields enclosed in &lt; &gt; are treated as regular expressions: e.g. &lt;test-[0-9]*&gt; matches
+          the word test- followed by digits.</dd>
+          <dt>WAIT <i>milliseconds</i> </dt><dd> Will wait for the specified number of milliseconds.</dd>
+          <dt>RESET <i>clordid</i> </dt><dd> Will delete all entries in the order manager for this client order. Use this to
+          make sure the test case runs cleanly. Especially before an <i>I</i> step where it is important that there is only
+          one unique clordid stored so that the replace/cancel refers to this one.</dd>
+      </dl>
+      <b>Example:</b><br>
+      <code>
+# Testing a replace of a new order based on the originally issued randomized clordid<br>
+iCONNECT FIX.4.2:BANZAI->EXEC<br>
+RESET Test1<br>
+RESET Test1b<br>
+I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=Test1>|21=1|38=100|40=1|54=1|55=LNUX|58=Please deliver !|60=20100919-17:36:58.858|10=085|<br>
+E8=FIX.4.2|9=129|35=8|34=407|49=EXEC|52=20100923-22:21:00.081|56=BANZAI|6=0|11=<Test1-[0-9]*>|14=0|17=793|20=0|37=793|39=0|54=1|55=LNUX|150=2|151=0|10=169|<br>
+WAIT 1000<br>
+I8=FIX.4.2|9=136|35=G|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=Test1b>|41=<OrigClordid=Test1>|21=1|38=200|40=1|54=1|55=LNUX|58=Please deliver more !|60=20100919-17:36:58.858|10=085|<br>
+E8=FIX.4.2|9=102|35=j|34=259|49=EXEC|52=20100923-20:55:48.018|56=BANZAI|45=163|58=Unsupported Message Type|372=G|380=3|10=235<br>
+eDISCONNECT<br>
+      </code>
+      <p>When using <i>expects</i> the test driver will not be able to distinguish between application level messages intended for
+      the Client order id at hand or others; it will try to match each message (except for heartbeat, resend, etc.)
+      to the expectation. Incoming fills or acks for other orders might throw it off.
+      For critical sections a small delay may be necessary.</p>
+      <p>On the <i>Initiate step</i> you may specify a number of variables to customize your message:</p>
+      <dl>
+          <dt>&lt;Clordid=test&gt;</dt><dd>Will create a unique clordid and store it for retrieval in the order manager.</dd>
+          <dt>&lt;OrigClordid=test&gt;</dt><dd>Will be replaced by the unique clordid previously used for this order id.</dd>
+          <dt>&lt;Date&gt;</dt><dd>Will be replaced with the current date and time in UTC format.</dd>
+          <dt>&lt;Date+nnh&gt;</dt><dd>Will be replaced with the current date plus nn hours in UTC format.</dd>
+          <dt>&lt;Date+nnd&gt;</dt><dd>Will be replaced with the current date plus nn days in UTC format.</dd>
+          <dt>&lt;Date+nnx,yyyy-MM-dd&gt;</dt><dd>Will be replaced with the current date plus offset in the specified date format.
+          You can use any format recognized by Java. E.g. yyyyMM for 201012.</dd>
+          <dt>&lt;Product=key,col&gt;</dt><dd>Will do a lookup in the dictionary for product <i>key</i> and be replaced by the value
+          found in column <i>col</i>. The dictionary can have any number of columns and products. This is useful to
+          keep derivative orders up to date with their expiry and strike, but can in principle be used for any replace.</dd>
+      </dl>
       <br>  <h2>Order Manager</h2>
+      <p>The order manager shows all orders it knows about in the upper table. It will keep the status of the orders
+      for most cases, although it is not completely knowledgeable on all possible scenarios. By selecting an order in
+      the upper view, all Fix messages relating to it are shown in the lower table.
+      Double clicking a row in this table will show the message in the Fix dialog, specifying tag, name and data types.</p>
+      <p>The order manager is also responsible for telling the test driver what client order id was used last time. When
+      an order is replaced or canceled in a test the &lt;OrigClordid=...&gt; tag will get its id from here.</p>
+      <p>The orders and messages are persisted between runs of the program in a hsqldb database. To purge all orders
+      from the database press the purge button. Selectively deleting entries is done using the <i>RESET</i> action
+      in the test case.</p>
+      <br>  <h2>Dictionary Editor</h2>
+      <p>The dictionary Editor allows you to update values for lookups or even add and delete rows. The actual dictionary
+      is a csv file living in the <i>config</i> directory of the tool, <i>products.def</i>. You can prime the dictionary by
+      placing any comma separated file here before starting up the tool. The first row is parsed as the column names and
+      the first column becomes the product id. Please note that any row with more fields than the defined columns will be
+      truncated when the dictionary is edited.</p>
+      <p>Click save to update the csv file on disk. Do this before running any tests.</p>
+      <br><b>Example file:</b><br>
+      <code>
+productid,symbol,expiry,strike,comment<br>
+futAEX,FTI,201011,340,blabla<br>
+futFTSE,Z,201011,200,blabla<br>
+      </code>
+      <br>  <h2>Editing test cases</h2>
+      <p>Test cases can be edited by double clicking their name in the tree view. The simple text editor will
+      let you reload, save or discard your changes.</p>
+      <p>To more easily edit a Fix message, place your cursor anywhere on the I or E lines with the message and select
+      Edit - Edit FIX msg... Alternatively, select (part of) the FIX message before selecting the menu item. Both ways will
+      open a dialog where the individual tags can be edited. For any recognized tag it will show the name and data types as
+      a guide. You can either update the message in the single line or table views. Adding tags can currently only be done
+      in the top line. When you exit the dialog with ok, the edited portion will be replaced in the file.</p>
+      <p>The same dialog can be called form the Tools menu in the main window. In this case it won't save anything, but
+      you can use it to inspect messages.</p>
+      <br>  <h2>Feedback</h2>
+      <p>I hope you find this tool useful. Any remarks, critiques, suggestions or gossip:
+      <i style="text-decoration: underline">p.vrolijk AT gmail.com</i></p>
+      <br><br><h3 style="text-align: center">--//--\\--</h3>
   </body>
 </html>
 

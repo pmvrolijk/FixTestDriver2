@@ -39,7 +39,7 @@ import org.junit.runner.JUnitCore;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.26\n2010/10/09";
+    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.27\n2010/10/12";
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
     static {
@@ -54,6 +54,8 @@ public class MainWindow extends javax.swing.JFrame {
 
     /** Creates new form MainWindow */
     public MainWindow() {
+        logger.info("FixTestDriver starting...");
+        logger.info(VERSION);
         //register ourselves for callbacks
         this.cm=ConfigurationManager.getConfigurationManager();
         cm.setMainApp(this);
@@ -122,11 +124,13 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuSaveSettings = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        jMenuItemTestcaseEdit = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItemOrderManager = new javax.swing.JMenuItem();
         jMenuItemFixLook = new javax.swing.JMenuItem();
         jMenuItemViewLog = new javax.swing.JMenuItem();
+        jMenuItemShowFixLog = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItemHelp = new javax.swing.JMenuItem();
         jMenuItemAbout = new javax.swing.JMenuItem();
@@ -226,7 +230,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu1.add(jMenuLoadTestCases);
         jMenu1.add(jSeparator1);
 
-        jMenuItemFIXSettings.setText("Edit FIX Sessions");
+        jMenuItemFIXSettings.setText("Edit FIX Sessions...");
         jMenuItemFIXSettings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemFIXSettingsActionPerformed(evt);
@@ -278,6 +282,15 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
+
+        jMenuItemTestcaseEdit.setText("Edit test case...");
+        jMenuItemTestcaseEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemTestcaseEditActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemTestcaseEdit);
+
         jMenuBar1.add(jMenu2);
 
         jMenu3.setText("Tools");
@@ -311,13 +324,21 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu3.add(jMenuItemFixLook);
 
-        jMenuItemViewLog.setText("View log");
+        jMenuItemViewLog.setText("View log...");
         jMenuItemViewLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemViewLogActionPerformed(evt);
             }
         });
         jMenu3.add(jMenuItemViewLog);
+
+        jMenuItemShowFixLog.setText("Show FIX log...");
+        jMenuItemShowFixLog.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemShowFixLogActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItemShowFixLog);
 
         jMenuBar1.add(jMenu3);
 
@@ -635,6 +656,25 @@ public class MainWindow extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, scroll,"Help",JOptionPane.PLAIN_MESSAGE);
     }//GEN-LAST:event_jMenuItemHelpActionPerformed
 
+    private void jMenuItemTestcaseEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemTestcaseEditActionPerformed
+        TreePath selPath = jTree_testCases.getSelectionPath();
+        if (selPath==null) return;
+        DefaultMutableTreeNode node=(DefaultMutableTreeNode)selPath.getLastPathComponent();
+        if (node.isLeaf()) {
+            final String filename=node.getParent()+File.separator+ node.toString();
+            //System.out.println("Double click on "+filename);
+            java.awt.EventQueue.invokeLater( new Runnable() {
+                 public void run() {new FileEditor(filename).setVisible(true);}
+            });
+        }
+    }//GEN-LAST:event_jMenuItemTestcaseEditActionPerformed
+
+    private void jMenuItemShowFixLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemShowFixLogActionPerformed
+        java.awt.EventQueue.invokeLater( new Runnable() {
+             public void run() {new FileEditor("logs/Fixmessages.log",false).setVisible(true);}
+        });
+    }//GEN-LAST:event_jMenuItemShowFixLogActionPerformed
+
     private Boolean createFile(String filename, String initLine) {
         FileWriter writer = null;
         Boolean succes=true;
@@ -751,8 +791,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItemHelp;
     private javax.swing.JMenuItem jMenuItemOrderManager;
     private javax.swing.JMenuItem jMenuItemReload;
+    private javax.swing.JMenuItem jMenuItemShowFixLog;
     private javax.swing.JMenuItem jMenuItemStartFE;
     private javax.swing.JMenuItem jMenuItemStopFE;
+    private javax.swing.JMenuItem jMenuItemTestcaseEdit;
     private javax.swing.JMenuItem jMenuItemViewLog;
     private javax.swing.JMenuItem jMenuLoadTestCases;
     private javax.swing.JMenuItem jMenuSaveSettings;
