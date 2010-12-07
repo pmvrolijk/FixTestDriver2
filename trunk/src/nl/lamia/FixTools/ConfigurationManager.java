@@ -35,18 +35,7 @@ public class ConfigurationManager {
     private ConfigurationManager() {
         configFile="config/testdriver.properties";
         appProperties=new Properties();
-        //Try to read the file. If not present create default properties
-        FileInputStream file=null;
-        try {
-            file=new FileInputStream(configFile);
-            appProperties.load(file);
-        } catch (IOException ex) {
-            logger.info("No configuration file. Using defaults.");
-            loadDefaults();
-        } finally {
-            try {if (file!=null) file.close();}
-            catch (Exception e) {logger.error("Error closing file -", e);}
-        }
+        loadProperties();
     }
 
     public String getProperty(String key) {
@@ -76,7 +65,27 @@ public class ConfigurationManager {
         appProperties.setProperty("Application.testcases", "testcases");
         appProperties.setProperty("FixEngine.configuration", "config/FixEngine.cfg");
         appProperties.setProperty("Dictionary.filename", "config/products.def");
+        appProperties.setProperty("TestMessage.ignoreUnexpectedTags" , "false");
+        appProperties.setProperty("TestMessage.checkDateTags" , "false");
+        appProperties.setProperty("TestMessage.skipTags" , "10,9,45,34,17,37");
+        appProperties.setProperty("QueuedMessage.staleTime", "30000");
     }
+
+    public void loadProperties() {
+        //Try to read the file. If not present create default properties
+        FileInputStream file=null;
+        try {
+            file=new FileInputStream(configFile);
+            appProperties.load(file);
+        } catch (IOException ex) {
+            logger.info("No configuration file. Using defaults.");
+            loadDefaults();
+        } finally {
+            try {if (file!=null) file.close();}
+            catch (Exception e) {logger.error("Error closing file -", e);}
+        }
+    }
+
 
     public Boolean saveProperties() {
         FileOutputStream file=null;

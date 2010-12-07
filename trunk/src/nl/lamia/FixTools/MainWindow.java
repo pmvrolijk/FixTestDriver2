@@ -39,7 +39,7 @@ import org.junit.runner.JUnitCore;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.27\n2010/10/12";
+    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.28\n2010/12/07";
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
     static {
@@ -100,7 +100,6 @@ public class MainWindow extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTree_testCases = new javax.swing.JTree();
         jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
         jButtonRunSelected = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -116,15 +115,17 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuLoadTestCases = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        jMenuItemFIXSettings = new javax.swing.JMenuItem();
         jMenuItemReload = new javax.swing.JMenuItem();
         jMenuItemStartFE = new javax.swing.JMenuItem();
         jMenuItemStopFE = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        jMenuSaveSettings = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItemTestcaseEdit = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        jMenuItemFIXSettings = new javax.swing.JMenuItem();
+        jMenuItemPreferences = new javax.swing.JMenuItem();
+        jMenuSaveSettings = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItemOrderManager = new javax.swing.JMenuItem();
@@ -146,13 +147,6 @@ public class MainWindow extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTree_testCases);
 
         jLabel1.setText("Testcase files");
-
-        jButton1.setText("Run all");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         jButtonRunSelected.setText("Run selected");
         jButtonRunSelected.addActionListener(new java.awt.event.ActionListener() {
@@ -230,14 +224,6 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu1.add(jMenuLoadTestCases);
         jMenu1.add(jSeparator1);
 
-        jMenuItemFIXSettings.setText("Edit FIX Sessions...");
-        jMenuItemFIXSettings.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItemFIXSettingsActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItemFIXSettings);
-
         jMenuItemReload.setText("Reload engine");
         jMenuItemReload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -263,14 +249,6 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu1.add(jMenuItemStopFE);
         jMenu1.add(jSeparator2);
 
-        jMenuSaveSettings.setText("Save settings");
-        jMenuSaveSettings.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuSaveSettingsActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuSaveSettings);
-
         jMenuItem2.setText("Quit");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -290,6 +268,31 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu2.add(jMenuItemTestcaseEdit);
+        jMenu2.add(jSeparator3);
+
+        jMenuItemFIXSettings.setText("Edit FIX Sessions...");
+        jMenuItemFIXSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemFIXSettingsActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemFIXSettings);
+
+        jMenuItemPreferences.setText("General Settings");
+        jMenuItemPreferences.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemPreferencesActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItemPreferences);
+
+        jMenuSaveSettings.setText("Save settings");
+        jMenuSaveSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuSaveSettingsActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuSaveSettings);
 
         jMenuBar1.add(jMenu2);
 
@@ -376,15 +379,13 @@ public class MainWindow extends javax.swing.JFrame {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel2)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jButtonAddFile)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jButtonDelete)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 284, Short.MAX_VALUE)
-                        .add(jButtonRunSelected)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jButton1))
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(jButtonAddFile)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                            .add(jButtonDelete)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jButtonRunSelected))
                         .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                             .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -394,7 +395,7 @@ public class MainWindow extends javax.swing.JFrame {
                             .add(jButtonLogon)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                             .add(jButtonReset))))
-                .addContainerGap())
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -418,10 +419,9 @@ public class MainWindow extends javax.swing.JFrame {
                         .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jButton1)
-                            .add(jButtonRunSelected)
                             .add(jButtonAddFile)
-                            .add(jButtonDelete)))
+                            .add(jButtonDelete)
+                            .add(jButtonRunSelected)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -446,20 +446,6 @@ public class MainWindow extends javax.swing.JFrame {
         fe.close();
         System.exit(0);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        //Run all tests
-        System.setProperty("testcase.dir",testCasesRoot);
-        //fe.setParentWindow(this);
-        Thread t=new Thread(new Runnable() {
-            public void run() {
-                    JUnitCore core=new JUnitCore();
-                    core.addListener(new JunitListener());
-                    core.run(FixResponseTest.class);
-                }
-            });
-        t.start();
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jMenuItemOrderManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemOrderManagerActionPerformed
         java.awt.EventQueue.invokeLater( new Runnable() {
@@ -516,21 +502,33 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void jButtonLogoffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogoffActionPerformed
         int sel=this.jTableEngineStatus.getSelectedRow();
-        if (sel==-1) return;
+        if (sel==-1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a session on the left.", "INFO", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         String session=(String)jTableEngineStatus.getModel().getValueAt(sel, 1);
         fe.logout(session);
     }//GEN-LAST:event_jButtonLogoffActionPerformed
 
     private void jButtonLogonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLogonActionPerformed
         int sel=this.jTableEngineStatus.getSelectedRow();
-        if (sel==-1) return;
+        if (sel==-1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a session on the left.", "INFO", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         String session=(String)jTableEngineStatus.getModel().getValueAt(sel, 1);
         fe.logon(session);
     }//GEN-LAST:event_jButtonLogonActionPerformed
 
     private void jButtonResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonResetActionPerformed
         int sel=this.jTableEngineStatus.getSelectedRow();
-        if (sel==-1) return;
+        if (sel==-1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a session on the left.", "INFO", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         String session=(String)jTableEngineStatus.getModel().getValueAt(sel, 1);
         fe.reset(session);
     }//GEN-LAST:event_jButtonResetActionPerformed
@@ -675,6 +673,11 @@ public class MainWindow extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_jMenuItemShowFixLogActionPerformed
 
+    private void jMenuItemPreferencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemPreferencesActionPerformed
+        EditPreferences dialog = new EditPreferences(this, true);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_jMenuItemPreferencesActionPerformed
+
     private Boolean createFile(String filename, String initLine) {
         FileWriter writer = null;
         Boolean succes=true;
@@ -769,7 +772,6 @@ public class MainWindow extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonAddFile;
     private javax.swing.JButton jButtonDelete;
     private javax.swing.JButton jButtonLogoff;
@@ -790,6 +792,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItemFixLook;
     private javax.swing.JMenuItem jMenuItemHelp;
     private javax.swing.JMenuItem jMenuItemOrderManager;
+    private javax.swing.JMenuItem jMenuItemPreferences;
     private javax.swing.JMenuItem jMenuItemReload;
     private javax.swing.JMenuItem jMenuItemShowFixLog;
     private javax.swing.JMenuItem jMenuItemStartFE;
@@ -803,6 +806,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JTable jTableEngineStatus;
     private javax.swing.JTextArea jTestOutput;
     private javax.swing.JTree jTree_testCases;

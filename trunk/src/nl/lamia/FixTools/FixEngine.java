@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import javax.swing.JFrame;
+import javax.swing.Timer;
+import java.awt.event.*;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.log4j.Logger;
@@ -64,6 +66,8 @@ public class FixEngine implements Application {
 	
         private static FixEngine fixengine=null;
 
+        private ArrayList<QueuedMessage> msgQueue;
+
         public static FixEngine getFixEngine() {
             if (fixengine==null) fixengine=new FixEngine();
             return fixengine;
@@ -91,6 +95,15 @@ public class FixEngine implements Application {
 	    this.load();  //read config and initialize
 	    //Store for Expect messages:
 	    expectations=new HashSet<ExpectMessageStep>();
+            msgQueue=new ArrayList<QueuedMessage>();
+
+            //Timer for queue
+            Timer t=new Timer(300, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    deliver();
+                }
+            });
+            t.start();
 	}
 
         public void load() {
@@ -199,8 +212,12 @@ public class FixEngine implements Application {
 		logger.info("Incoming: "+message.toString().replace('\001', '|'));
                 pushStatus();
 
+                String msgType=message.getHeader().getString(35);
+                msgQueue.add(new QueuedMessage(sessionId, msgType, message));
+                deliver();
+
 		//See whether somebody is interested:
-		for (ExpectMessageStep caller: expectations) {
+		/*for (ExpectMessageStep caller: expectations) {
 			//Check for session id only. Heartbeats come in on the admin callback
 			//so the next message is prob an incoming answer. 
 			//If this turns out not to be the case, then we may need to expand this
@@ -210,9 +227,38 @@ public class FixEngine implements Application {
 				caller.notifyAll();
 			}
 			expectations.remove(caller); //only one message per expect
-		}
+		}*/
 	
 	}
+
+        public void cleanQueue() {
+            logger.info("Clearing message queue");
+            msgQueue.clear();
+        }
+
+        private void deliver() {
+            logger.debug("Attempting to send queued messages");
+            logger.debug("Number of waiting msgs: "+msgQueue.size());
+            QueuedMessage msg;
+            for (int i=0;i<msgQueue.size();i++) {
+                msg=msgQueue.get(i);
+		for (ExpectMessageStep caller: expectations) {
+                    logger.debug("Queued msg: "+msg.getMsgtype()+" for "+msg.getSession().toString());
+                    logger.debug("Caller msg: "+caller.getMsgType()+" for "+caller.getSession().toString());
+                    if (caller.getMsgType().equals(msg.getMsgtype()) &&
+                        caller.getSession().equals(msg.getSession()) ) {
+                            //try to send
+                            synchronized (caller) {
+				caller.receive(msg.getMessage());     //wake up sleepy head
+				caller.notifyAll();
+                            }
+                            expectations.remove(caller); //only one message per expect
+                            msgQueue.remove(i);
+                    }
+		}
+                if (msg.isStale()) msgQueue.remove(i);
+            }
+        }
 
         private void pushStatus() {
             if (this.parentWindow==null || this.sessionList==null) return;

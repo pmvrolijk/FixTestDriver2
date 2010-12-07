@@ -117,6 +117,7 @@ public class TestRun {
 	 */
 	public Boolean run() {
 		Boolean result=false;
+                fixEngine.cleanQueue(); //TODO: Get rid of the old messages from previous tests
                 if (mainApp!=null) mainApp.appendTestOutput("\nRunning test: "+testname);
 		logger.info("------------------------------------------------");
 		logger.info("- START test case: "+testname);

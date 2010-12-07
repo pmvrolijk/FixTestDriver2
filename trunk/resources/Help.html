@@ -25,7 +25,7 @@ and open the template in the editor.
       <img src="mainwindow.png" alt="Main window layout"/>
       <p>In the main window on the left the test cases are presented in a tree view. Selecting a
        test case or folder by clicking on it selects and clicking on the run selected button
-      in the lower right runs it. Run all will run all tests in the view. Double clicking a test case
+      in the lower right runs it. Double clicking a test case
       opens an editor where the test case can be edited. New test cases can be added with the button labeled New file,
       the selected test case can be deleted using the button labeled Delete.</p>
       <p>At the top of the application the current status for the fix sessions is shown. The selected session can
@@ -41,12 +41,13 @@ and open the template in the editor.
           <dt>Reload engine</dt><dd>After changing the Fix settings, you need to reload the engine for it to have any effect.</dd>
           <dt>Start engine</dt><dd>Start the engine, connects all sessions.</dd>
           <dt>Stop engine</dt><dd>Stop the Fix engine, closes all sessions.</dd>
-          <dt>Save settings</dt><dd>Currently saves just the location of the test cases opened.</dd>
           <dt>Quit</dt><dd>So long and thanks for all the fish.</dd>
       </dl>
       <h3>Edit</h3>
       <dl>
           <dt>Edit test case</dt><dd>Open an editor for the selected test case.</dd>
+          <dt>General Settings</dt><dd>Allows you to set different options.</dd>
+          <dt>Save settings</dt><dd>Saves the location of the test cases and general settings.</dd>
       </dl>
       <h3>Tools</h3>
       <dl>
@@ -70,10 +71,14 @@ and open the template in the editor.
           time. The session name is found in the session manager table.</dd>
           <dt># </dt><dd> print step, used to comment on the test at hand. Will be printed at run time.</dd>
           <dt>I </dt><dd> Initiate a Fix message, i.e. send it to the session defined in the iCONNECT.</dd>
-          <dt>E </dt><dd> Expect a Fix message. The next message to come in will be compared to this line.
-          Datetime fields, checksum and length fields are not taken into consideration. Other fields are compared
-          literally. Fields enclosed in &lt; &gt; are treated as regular expressions: e.g. &lt;test-[0-9]*&gt; matches
-          the word test- followed by digits.</dd>
+          <dt>E </dt><dd> Expect a Fix message. The next message destined for the current session and of <i>the specified 
+          message type</i> to come in will be compared to this line.
+          Datetime fields, checksum and length fields are not taken into consideration (which fields are excluded is 
+          set in the general settings). Additionally all UTC format fields can be checked for a valid format.
+          Other fields are compared literally. Fields enclosed in &lt; &gt; are treated as regular expressions:
+          e.g. &lt;test-[0-9]*&gt; matches the word test- followed by digits and &lt;.*&gt; matches everything.
+          If a tag is not specified in the expect line it will lead to a failed test, unless the option <i>ignore unexpected
+          tags</i> is checked in general settings.</dd>
           <dt>WAIT <i>milliseconds</i> </dt><dd> Will wait for the specified number of milliseconds.</dd>
           <dt>RESET <i>clordid</i> </dt><dd> Will delete all entries in the order manager for this client order. Use this to
           make sure the test case runs cleanly. Especially before an <i>I</i> step where it is important that there is only
@@ -93,9 +98,10 @@ E8=FIX.4.2|9=102|35=j|34=259|49=EXEC|52=20100923-20:55:48.018|56=BANZAI|45=163|5
 eDISCONNECT<br>
       </code>
       <p>When using <i>expects</i> the test driver will not be able to distinguish between application level messages intended for
-      the Client order id at hand or others; it will try to match each message (except for heartbeat, resend, etc.)
-      to the expectation. Incoming fills or acks for other orders might throw it off.
-      For critical sections a small delay may be necessary.</p>
+      the Client order id at hand or others; it will try to match each message (except for heartbeat, resend, etc.) of the correct
+      message type and session id to the next expect line. Incoming fills or acks for other orders might throw it off.
+      For critical sections a small delay may be necessary. All waiting, unconsumed messages are cleared between testcases, but
+      of course market fills could come in during a next test if the order isn't cancelled.</p>
       <p>On the <i>Initiate step</i> you may specify a number of variables to customize your message:</p>
       <dl>
           <dt>&lt;Clordid=test&gt;</dt><dd>Will create a unique clordid and store it for retrieval in the order manager.</dd>
@@ -142,6 +148,24 @@ futFTSE,Z,201011,200,blabla<br>
       in the top line. When you exit the dialog with ok, the edited portion will be replaced in the file.</p>
       <p>The same dialog can be called form the Tools menu in the main window. In this case it won't save anything, but
       you can use it to inspect messages.</p>
+      <br>  <h2>General settings</h2>
+      <p>The behaviour of the tests can be adjusted by setting the following options:</p>
+      <ul>
+          <li>Ignore tags: tags that will be ignored when matching a received message (e.g. sequence nrs)</li>
+          <li>Wait for answer timeout: time in milliseconds to keep waiting for an answer in the expect step</li>
+          <li>Check date tag format: optional strict checking of UTC timestamps for incoming messages</li>
+          <li>Ignore unexpected tags: when checked, missing tags in the expect line will not lead to a failed test</li>
+      </ul>
+      <p>These options are active from the next test case run from the program. To make them default save the settings
+      to disk using Edit - Save Settings</p>
+      <br>  <h2>Change history</h2>
+      <p>New in version 1.28:</p>
+      <ul>
+          <li>Added user configuration of general settings</li>
+          <li>Minor GUI changes</li>
+          <li>Optional strict checking of UTC timestamps for incoming messages</li>
+          <li>Added a queuing mechanism to ensure message delivery to expect steps</li>
+      </ul>
       <br>  <h2>Feedback</h2>
       <p>I hope you find this tool useful. Any remarks, critiques, suggestions or gossip:
       <i style="text-decoration: underline">p.vrolijk AT gmail.com</i></p>

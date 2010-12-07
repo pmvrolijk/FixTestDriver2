@@ -9,6 +9,8 @@ import java.util.Map;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
@@ -17,6 +19,7 @@ import junit.framework.Assert;
 
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
+import quickfix.FieldType;
 import quickfix.InvalidMessage;
 import quickfix.Message;
 
@@ -183,9 +186,48 @@ public class TestMessage {
         }
         return sum % 256;
     }
-    
+
+    public static Boolean dateValidator(quickfix.Message QFmessage) {
+        //First we turn the actual message to string and then a map
+    	String message=QFmessage.toString();
+    	message=message.replaceAll("\001", "|");
+        DataDictionary dd=dataDictionary.get(message.substring(2, 9));
+        Assert.assertNotNull("Data dictionary undefined or unknown FIX: "+message.substring(2, 9),dd);
+        HashMap<String,String> actFields=parse(message);
+        Iterator<Map.Entry<String, String>> fieldIterator = actFields.entrySet().iterator();
+        String key,value;
+        while (fieldIterator.hasNext()) {
+            Map.Entry<String, String> entry = fieldIterator.next();
+            key = entry.getKey();
+            value = entry.getValue();
+            FieldType ft=dd.getFieldTypeEnum(Integer.parseInt(key));
+            if (ft!=null && ft.getName().equals("UTCTIMESTAMP")) {
+                logger.info("Checking tag "+key+"="+value+" for valid UTC timestamp.");
+                Assert.assertTrue("Invalid UTC Timestamp for tag "+key+"("+value+")",
+                        value.matches("[0-9]{8}-[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]*"));
+            }
+        }
+        return true;
+    }
+
     public static Boolean compare(quickfix.Message QFmessage, String expected) {
-    	//First we turn the actual message to string and then a map
+        //Get the handle on the configuration manager
+        //TestMessage.ignoreUnexpectedTags=true
+        //TestMessage.checkDateTags=true
+        //TestMessage.skipTags=10,9,45,34,17,37
+        ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
+        Boolean ignoreUnexpectedTags=false;
+        Boolean checkDateTags=false;
+        List skipTags;
+        if (cm.getProperty("TestMessage.ignoreUnexpectedTags","false").equalsIgnoreCase("true"))
+                ignoreUnexpectedTags=true;
+        if (cm.getProperty("TestMessage.checkDateTags","false").equalsIgnoreCase("true"))
+                checkDateTags=true;
+        String tags=cm.getProperty("TestMessage.skipTags","");
+        String tag[]=tags.split(",");
+        skipTags=Arrays.asList(tag);
+
+        //First we turn the actual message to string and then a map
     	String message=QFmessage.toString();
     	message=message.replaceAll("\001", "|");
     	HashMap<String,String> actFields=parse(message);
@@ -203,20 +245,17 @@ public class TestMessage {
         Iterator<Map.Entry<String, String>> fieldIterator = actFields.entrySet().iterator();
         while (fieldIterator.hasNext()) {
             Map.Entry<String, String> entry = fieldIterator.next();
-            Object key = entry.getKey();
+            String key = entry.getKey();
             //System.out.println("key:"+key+",Value:"+entry.getValue());
-            if (key.equals("10") || key.equals("9") ||	   //Checksum and length
-            	key.equals("45") || key.equals("34") ||    //Sequence numbers
-            	key.equals("17") ||     //ExecutionID 
-            	key.equals("37")        //Orderid
-            	) {   //skip fields
+            if (skipTags.contains(key)) {   //skip fields
                 continue;
-            } else if (!expFields.containsKey(key)) {     //Didn't expect that ! 
+            } else if (!expFields.containsKey(key) && !ignoreUnexpectedTags ) {     //Didn't expect that !
                 Assert.fail("Unexpected field " + key + ",value=" + entry.getValue());
-            } else if (TIMEFIELDS.contains(key)) {        //TODO: Check on length only now, format when needed
+            } else if (TIMEFIELDS.contains(key) && expFields.containsKey(key)) {
+                //TODO: Check on length only now, format when needed
                 Assert.assertEquals("Timefield " + key + " unexpected length.",
                 				entry.getValue().length(),expFields.get(key).length());
-            } else if (REGEXEXPECT.matcher(expFields.get(key)).find()) {
+            } else if (expFields.containsKey(key) && REGEXEXPECT.matcher(expFields.get(key)).find()) {
             	//Regular expression
             	logger.debug("We are doing a regex matching: "+expFields.get(key)+" vs "+entry.getValue());
             	Matcher m=REGEXEXPECT.matcher(expFields.get(key));
@@ -224,7 +263,7 @@ public class TestMessage {
             	String expPattern=m.group(1);
             	Assert.assertTrue("Tag "+key+" value "+entry.getValue()+" doesn't match regex: "+expPattern,
             			entry.getValue().matches(expPattern));
-            } else {	
+            } else if (expFields.containsKey(key)) {
                 Assert.assertEquals("field " + key + " not equal: ", expFields.get(key), entry.getValue());
             }
         }
