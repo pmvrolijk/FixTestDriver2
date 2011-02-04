@@ -7,6 +7,7 @@ package nl.lamia.FixTools;
 
 import java.util.Date;
 import org.apache.log4j.Logger;
+import quickfix.FieldNotFound;
 import quickfix.Message;
 import quickfix.SessionID;
 
@@ -22,6 +23,7 @@ public class QueuedMessage {
 
     private SessionID session;
     private String msgtype;
+    private String clordid;
     private Message message;
     private Date receivedDate;
 
@@ -32,6 +34,12 @@ public class QueuedMessage {
         this.msgtype = msgtype;
         this.message = message;
         this.receivedDate = new Date();
+        //Is there a client order id ?
+        try {
+            clordid=message.getString(11);
+        } catch (quickfix.FieldNotFound e) {
+            clordid=null;
+        }
     }
 
     public Message getMessage() {
@@ -42,14 +50,21 @@ public class QueuedMessage {
         return msgtype;
     }
 
+    public String getClordid() {
+        return clordid;
+    }
+
     public Date getReceivedDate() {
         return receivedDate;
     }
 
     public Boolean isStale() {
         long age=new Date().getTime()-receivedDate.getTime();
-        logger.info("Message age="+age);
-        if (age>stale) return true;
+        logger.debug("Message age="+age);
+        if (age>stale) {
+            logger.info("Message ("+msgtype+") is stale, can be deleted.");
+            return true;
+        }
         return false;
     }
 

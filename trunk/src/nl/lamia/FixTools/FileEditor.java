@@ -11,6 +11,8 @@
 
 package nl.lamia.FixTools;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import org.apache.log4j.Logger;
 public class FileEditor extends javax.swing.JFrame {
 
     private static Logger logger = Logger.getLogger(FileEditor.class);
+    private ConfigurationManager cm;
     private final static Pattern FIXMSG=Pattern.compile("8=FIX[^$]*?\\|10=[0-9]{3}[|]?"); //non greedy match
 
     private String fileName=null;
@@ -39,6 +42,15 @@ public class FileEditor extends javax.swing.JFrame {
         this.fileName=""+filename;
         loadFile(fileName);
         this.setTitle(fileName);
+        cm=ConfigurationManager.getConfigurationManager();
+        cm.getGeometry(this, "FileEditor", "10,10,480,360");
+
+        //User uses window close
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                discardClose();
+                }
+            });
     }
 
     public FileEditor(String filename, Boolean write) {
@@ -49,6 +61,20 @@ public class FileEditor extends javax.swing.JFrame {
         this.write=write;
         this.jMenuItemSave.setEnabled(write);
         if (!write) this.jMenuItemEditFix.setText("Show Fix Msg...");
+
+        cm=ConfigurationManager.getConfigurationManager();
+        if (write) {
+            cm.getGeometry(this, "FileEditor", "10,10,480,360");
+        } else {
+            cm.getGeometry(this, "FileViewer", "10,10,480,360");
+        }
+
+         //User uses window close
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                discardClose();
+                }
+            });
     }
 
     private void loadFile(String filename) {
@@ -221,10 +247,19 @@ public class FileEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemSaveActionPerformed
 
     private void jMenuItemDiscardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemDiscardActionPerformed
-        this.setVisible(false);
-        this.dispose();
+        discardClose();
     }//GEN-LAST:event_jMenuItemDiscardActionPerformed
 
+    private void discardClose() {
+        if (write) {
+            cm.setGeometry(this, "FileEditor");
+        } else {
+            cm.setGeometry(this, "FileViewer");
+        }
+        this.setVisible(false);
+        this.dispose();
+    }
+    
     private void jMenuItemEditFixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemEditFixActionPerformed
         if (jTextArea1.getSelectedText()==null) {
             int caret=jTextArea1.getCaretPosition();

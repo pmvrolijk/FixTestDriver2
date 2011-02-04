@@ -13,14 +13,13 @@ package nl.lamia.FixTools;
 
 import java.awt.Dimension;
 import java.awt.HeadlessException;
-import java.awt.ScrollPane;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.event.TreeSelectionEvent;
@@ -39,7 +38,7 @@ import org.junit.runner.JUnitCore;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.28\n2010/12/07";
+    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.29\n2010/12/08";
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
     static {
@@ -62,6 +61,13 @@ public class MainWindow extends javax.swing.JFrame {
 
         fe=FixEngine.getFixEngine();
         initComponents();
+
+        //TODO check icon setting on windows/linux
+        //Image im = Toolkit.getDefaultToolkit().getImage("resources/FixIcon.gif");
+        //this.setIconImage(im);
+
+        //Retrieve geometry
+        cm.getGeometry(this, "MainWindow", "10,10,640,480");
 
         //exec status:
         execStatusTbl=new DefaultTableModel();
@@ -160,7 +166,7 @@ public class MainWindow extends javax.swing.JFrame {
         jTestOutput.setBackground(new java.awt.Color(220, 220, 220));
         jTestOutput.setColumns(20);
         jTestOutput.setEditable(false);
-        jTestOutput.setFont(new java.awt.Font("Courier New", 0, 12));
+        jTestOutput.setFont(new java.awt.Font("Courier New", 0, 12)); // NOI18N
         jTestOutput.setRows(5);
         jTestOutput.setBorder(javax.swing.BorderFactory.createTitledBorder("Test Output"));
         jScrollPane2.setViewportView(jTestOutput);
@@ -379,23 +385,22 @@ public class MainWindow extends javax.swing.JFrame {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel2)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(jButtonAddFile)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                            .add(jButtonDelete)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(jButtonRunSelected))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(jButtonLogoff)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                            .add(jButtonLogon)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                            .add(jButtonReset))))
-                .addContainerGap(20, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jButtonAddFile)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonDelete)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 368, Short.MAX_VALUE)
+                        .add(jButtonRunSelected))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonLogoff)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonLogon)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonReset))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -481,6 +486,7 @@ public class MainWindow extends javax.swing.JFrame {
         t.start();    }//GEN-LAST:event_jButtonRunSelectedActionPerformed
 
     private void jMenuSaveSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuSaveSettingsActionPerformed
+        cm.setGeometry(this, "MainWindow");
         cm.saveProperties();
 
     }//GEN-LAST:event_jMenuSaveSettingsActionPerformed
@@ -651,7 +657,15 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         scroll.setPreferredSize(new Dimension(800,600));
-        JOptionPane.showMessageDialog(this, scroll,"Help",JOptionPane.PLAIN_MESSAGE);
+
+        //Modal:
+        //JOptionPane.showMessageDialog(this, scroll,"Help",JOptionPane.PLAIN_MESSAGE);
+
+        //non modal:
+        JOptionPane joppie=new JOptionPane(scroll);
+        JDialog myDialog = joppie.createDialog(this, "Help");
+        myDialog.setModal(false);
+        myDialog.setVisible(true);
     }//GEN-LAST:event_jMenuItemHelpActionPerformed
 
     private void jMenuItemTestcaseEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemTestcaseEditActionPerformed

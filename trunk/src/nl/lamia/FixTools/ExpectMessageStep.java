@@ -13,6 +13,7 @@ public class ExpectMessageStep implements TestStep {
 
 	private static Logger logger = Logger.getLogger(ExpectMessageStep.class);
 	private static final Pattern MSGTYPEPATTERN = Pattern.compile("35=([^\\|]+)\\|");
+	private static final Pattern CLORDIDPATTERN = Pattern.compile("11=([^\\|]+)\\|");
 
 	private int timeout=10000;
 	
@@ -22,7 +23,12 @@ public class ExpectMessageStep implements TestStep {
 	private quickfix.Message answer;
 	private String expect;
 	private Boolean received;
-        private String msgtype;
+        private Boolean wantMsgType,wantClordid; //what are we waiting for.
+                      /*This should be expect step specific for possible later enhancements,
+                       * like having each step define its own behaviour.
+                       */
+        private String msgtype;  //for matching incoming, <unknown> if unspecified
+        private String clordid;  //for matching incoming, <unknown> if not present
 
 	@Override
 	public Boolean run() throws Exception {
@@ -74,8 +80,34 @@ public class ExpectMessageStep implements TestStep {
                 } else {
                     msgtype="<unknown>";
                 }
-                logger.info("Waiting for msgtype:"+msgtype);
+                m=CLORDIDPATTERN.matcher(expectStr);
+                if (m.find()) {
+                    clordid=m.group(1);
+                } else {
+                    clordid="<unknown>";
+                }
+                //Do we want to match msgtype and/or clordid ?
+                wantMsgType=(cm.getProperty("TestMessage.matchMsgType","true").equalsIgnoreCase("true"))? true:false;
+                wantClordid=(cm.getProperty("TestMessage.matchClordid","true").equalsIgnoreCase("true"))? true:false;
+                if (wantMsgType) logger.info("Waiting for msgtype:"+msgtype);
+                if (wantClordid) logger.info("Waiting for clordid:"+clordid);
 	}
+
+        /***
+         * Function can be called on Expect step to check if the message is desired.
+         * Each expect step can filter for msgtype, clientorder, both or not at all.
+         * @param type      Message type (tag 35)
+         * @param orderid   Client orderid (tag 11)
+         * @return
+         */
+        public Boolean wants(String type, String orderid) {
+            if (wantMsgType) logger.debug("Do we want 35="+type+" ?");
+            if (wantClordid) logger.debug("Do we want 11="+orderid+" ?");
+            if (type!=null && wantMsgType && !this.msgtype.equals(type)) return false;
+            if (orderid!=null && wantClordid && !TestMessage.fieldCompare(this.clordid, orderid)) return false;
+            logger.debug("yes we do !");
+            return true;
+        }
 
         public SessionID getSession() {
             return session;
@@ -85,4 +117,8 @@ public class ExpectMessageStep implements TestStep {
             return msgtype;
         }
 	
+        public String getClordid() {
+            return clordid;
+        }
+
 }

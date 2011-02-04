@@ -199,6 +199,9 @@ public class FixEngine implements Application {
 	public void toApp(Message message, SessionID sessionId) throws DoNotSend {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
+                //DEBUG
+                try {logger.info(TestMessage.print(message));}
+                catch (Exception e) {logger.warn("Problem printing message.",e);}
 		logger.info("Outgoing: "+message.toString().replace('\001', '|'));
                 pushStatus();
 	}
@@ -240,12 +243,15 @@ public class FixEngine implements Application {
             logger.debug("Attempting to send queued messages");
             logger.debug("Number of waiting msgs: "+msgQueue.size());
             QueuedMessage msg;
+            String msgtype,clordid;
             for (int i=0;i<msgQueue.size();i++) {
                 msg=msgQueue.get(i);
-		for (ExpectMessageStep caller: expectations) {
+                msgtype=msg.getMsgtype();
+                clordid=msg.getClordid();
+                for (ExpectMessageStep caller: expectations) {
                     logger.debug("Queued msg: "+msg.getMsgtype()+" for "+msg.getSession().toString());
                     logger.debug("Caller msg: "+caller.getMsgType()+" for "+caller.getSession().toString());
-                    if (caller.getMsgType().equals(msg.getMsgtype()) &&
+                    if (caller.wants(msgtype,clordid) &&
                         caller.getSession().equals(msg.getSession()) ) {
                             //try to send
                             synchronized (caller) {

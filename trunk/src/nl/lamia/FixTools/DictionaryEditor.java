@@ -11,8 +11,9 @@
 
 package nl.lamia.FixTools;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Vector;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -24,10 +25,21 @@ import javax.swing.table.DefaultTableModel;
 public class DictionaryEditor extends javax.swing.JFrame {
 
     private Dictionary d;
+    private ConfigurationManager cm;
 
     /** Creates new form DictionaryEditor */
     public DictionaryEditor() {
         initComponents();
+
+        //User uses window close
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                discardClose();
+                }
+            });
+
+        cm=ConfigurationManager.getConfigurationManager();
+        cm.getGeometry(this, "DictionaryEditor", "10,10,480,360");
         d=Dictionary.getDict();
         jTable1.setModel(d.getTableModel());
         this.setVisible(true);
@@ -103,7 +115,8 @@ public class DictionaryEditor extends javax.swing.JFrame {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jButton4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -111,22 +124,20 @@ public class DictionaryEditor extends javax.swing.JFrame {
                         .add(365, 365, 365)
                         .add(jButton2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButtonSave))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 621, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(28, Short.MAX_VALUE))
+                        .add(jButtonSave)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 333, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButtonSave)
                     .add(jButton2)
                     .add(jButton3)
-                    .add(jButton4))
-                .addContainerGap(24, Short.MAX_VALUE))
+                    .add(jButton4)))
         );
 
         pack();
@@ -150,11 +161,16 @@ public class DictionaryEditor extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton4MouseClicked
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        discardClose();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void discardClose() {
         //discard changes
         d.reloadDictionary();
+        cm.setGeometry(this, "DictionaryEditor");
         this.setVisible(false);
         this.dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }
 
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
         Boolean result=d.saveDictionary();
@@ -162,6 +178,7 @@ public class DictionaryEditor extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this,"Error saving dictionary file.\nCheck files / settings.",
                     "Error",JOptionPane.WARNING_MESSAGE);
         } else {
+            cm.setGeometry(this, "DictionaryEditor");
             this.setVisible(false);
             this.dispose();
         }

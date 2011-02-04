@@ -90,10 +90,12 @@ and open the template in the editor.
 iCONNECT FIX.4.2:BANZAI->EXEC<br>
 RESET Test1<br>
 RESET Test1b<br>
-I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=Test1>|21=1|38=100|40=1|54=1|55=LNUX|58=Please deliver !|60=20100919-17:36:58.858|10=085|<br>
-E8=FIX.4.2|9=129|35=8|34=407|49=EXEC|52=20100923-22:21:00.081|56=BANZAI|6=0|11=<Test1-[0-9]*>|14=0|17=793|20=0|37=793|39=0|54=1|55=LNUX|150=2|151=0|10=169|<br>
+I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=&lt;Clordid=Test1&gt;|21=1| 38=100|40=1|54=1|55=LNUX|58=Please deliver !|60=20100919-17:36:58.858|10=085|<br>
+E8=FIX.4.2|9=129|35=8|34=407|49=EXEC|52=20100923-22:21:00.081|56=BANZAI|6=0|11=&lt;Test1-[0-9]*&gt;|14=0| 17=793|20=0|37=793|39=0|54=1|55=LNUX|150=2|151=0|10=169|<br>
+E8=FIX.4.2|9=156|35=8|34=412|49=EXEC|52=20101207-15:47:29.670|56=BANZAI|6=&lt;.*&gt;|11=&lt;Test1-[0-9]*&gt;| 14=100|17=171|20=0|31=&lt;.*&gt;|32=100|37=171|38=100|39=2|54=1|55=LNUX|150=2|151=0|10=114|<br>
 WAIT 1000<br>
-I8=FIX.4.2|9=136|35=G|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=Test1b>|41=<OrigClordid=Test1>|21=1|38=200|40=1|54=1|55=LNUX|58=Please deliver more !|60=20100919-17:36:58.858|10=085|<br>
+I8=FIX.4.2|9=136|35=G|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=&lt;Clordid=Test1b&gt;| 41=&lt;OrigClordid=Test1&gt;|21=1|38=200|40=1|54=1|55=LNUX|58=Please deliver more !|60=20100919-17:36:58.858|10=085|<br>
+WAIT 500<br>
 E8=FIX.4.2|9=102|35=j|34=259|49=EXEC|52=20100923-20:55:48.018|56=BANZAI|45=163|58=Unsupported Message Type|372=G|380=3|10=235<br>
 eDISCONNECT<br>
       </code>
@@ -165,6 +167,12 @@ futFTSE,Z,201011,200,blabla<br>
           <li>Minor GUI changes</li>
           <li>Optional strict checking of UTC timestamps for incoming messages</li>
           <li>Added a queuing mechanism to ensure message delivery to expect steps</li>
+      </ul>
+      <p>New in version 1.29:</p>
+      <ul>
+          <li>GUI changes: saner resizing of windows, persistent size & location, other. </li>
+          <li>Configuration of conditions for matching in expect steps (msgtype and/or clordid).</li>
+          <li></li>
       </ul>
       <br>  <h2>Feedback</h2>
       <p>I hope you find this tool useful. Any remarks, critiques, suggestions or gossip:

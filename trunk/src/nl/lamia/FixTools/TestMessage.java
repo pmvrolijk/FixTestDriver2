@@ -19,13 +19,21 @@ import junit.framework.Assert;
 
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
+import quickfix.Field;
+import quickfix.FieldMap;
+import quickfix.FieldNotFound;
 import quickfix.FieldType;
+import quickfix.Group;
 import quickfix.InvalidMessage;
 import quickfix.Message;
+import quickfix.field.MsgType;
 
 public class TestMessage {
 
 	private static Logger logger = Logger.getLogger(TestMessage.class);
+
+        //TODO: Make all this threadsafer !
+        private static String output;
 	
     private static final DecimalFormat CHECKSUM_FORMAT = new DecimalFormat("000");
     private static final DateFormat DATE_FORMAT= new SimpleDateFormat("yyyyMMdd-HH:mm:ss");
@@ -271,6 +279,36 @@ public class TestMessage {
     	return true;
     }
 
+    /***
+     * Helper function to do a compare of two fields, 
+     *  implements  - a straight compare
+     *              - a regex compare
+     * @param soll     left, expected value (can contain regex contained in <>)
+     * @param ist      right, actual value (literal string only)
+     * @return          true if equal
+     */
+    public static Boolean fieldCompare(String soll, String ist) {
+            if (ist==null && soll==null) return true;  //null=null
+            if (ist==null || soll==null) return false; //null!=!null
+            if (REGEXEXPECT.matcher(soll).find()) {
+            	//Regular expression
+            	logger.debug("We are doing a regex matching: "+soll+" vs "+ist);
+            	Matcher m=REGEXEXPECT.matcher(soll);
+            	m.find();
+            	String expPattern=m.group(1);
+                //TODO use assert on field compare
+            	//Assert.assertTrue("Tag "+key+" value "+entry.getValue()+" doesn't match regex: "+expPattern,
+            	//		entry.getValue().matches(expPattern));
+                if (ist.matches(expPattern)) return true;
+            } else {
+                //Literal compare
+                logger.debug("We are doing a literal match: "+soll+" vs "+ist);
+                //Assert.assertEquals("field " + key + " not equal: ", expFields.get(key), entry.getValue());
+                if (ist.equals(soll)) return true;
+            }
+        return false;
+    }
+
     public static HashMap<String,String> parse(String message) {
         HashMap<String, String> fields = new HashMap<String, String>();
         Matcher fieldMatcher = FIELDPATTERN.matcher(message);
@@ -279,5 +317,64 @@ public class TestMessage {
         }
         return fields;
     }
+
+    /***
+     * Fix message pretty print function based on http://www.quickfixj.org/confluence/display/qfj/Using+Message+Metadata
+     * @param dd
+     * @param message
+     * @throws FieldNotFound
+     */
+    public static String print(Message message) throws FieldNotFound {
+        output="";   //TODO not nice threadsafe, etc.
+        String msgType = message.getHeader().getString(MsgType.FIELD);
+        String protocol=message.getHeader().getString(8);
+        DataDictionary dd=dataDictionary.get(protocol);
+        if (dd==null) {logger.error("Unknown protocol: "+protocol); return null;}
+        printFieldMap("", dd, msgType, message.getHeader());
+        printFieldMap("", dd, msgType, message);
+        printFieldMap("", dd, msgType, message.getTrailer());
+        return output;
+    }
+
+    private static void printFieldMap(String prefix, DataDictionary dd, String msgType, FieldMap fieldMap)
+            throws FieldNotFound {
+
+        Iterator fieldIterator = fieldMap.iterator();
+        while (fieldIterator.hasNext()) {
+            Field field = (Field) fieldIterator.next();
+            if (!isGroupCountField(dd, field)) {
+                String value = fieldMap.getString(field.getTag());
+                if (dd.hasFieldValue(field.getTag())) {
+                    value = dd.getValueName(field.getTag(), fieldMap.getString(field.getTag())) + " (" + value + ")";
+                }
+                //System.out.println(prefix + dd.getFieldName(field.getTag()) + ": " + value);
+                output+=prefix + dd.getFieldName(field.getTag()) + ": " + value+"\n";
+            }
+        }
+
+        Iterator groupsKeys = fieldMap.groupKeyIterator();
+        while (groupsKeys.hasNext()) {
+            int groupCountTag = ((Integer) groupsKeys.next()).intValue();
+            //System.out.println(prefix + dd.getFieldName(groupCountTag) + ": count = "
+            //        + fieldMap.getInt(groupCountTag));
+            output+=prefix+dd.getFieldName(groupCountTag)+": count = "+fieldMap.getInt(groupCountTag)+"\n";
+            Group g = new Group(groupCountTag, 0);
+            int i = 1;
+            while (fieldMap.hasGroup(i, groupCountTag)) {
+                if (i > 1) {
+                    //System.out.println(prefix + "  ----");
+                    output+=prefix + "  ----\n";
+                }
+                fieldMap.getGroup(i, g);
+                printFieldMap(prefix + "  ", dd, msgType, g);
+                i++;
+            }
+        }
+    }
+
+    private static boolean isGroupCountField(DataDictionary dd, Field field) {
+        return dd.getFieldTypeEnum(field.getTag()) == FieldType.NumInGroup;
+    }
+
     
 }

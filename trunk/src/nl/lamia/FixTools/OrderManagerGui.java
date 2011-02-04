@@ -11,6 +11,8 @@
 
 package nl.lamia.FixTools;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -24,11 +26,24 @@ import javax.swing.event.ListSelectionListener;
 public class OrderManagerGui extends javax.swing.JFrame {
 
     private OrderManager om=null;
+    private ConfigurationManager cm=null;
 
     /** Creates new form OrderManagerGui */
     public OrderManagerGui() {
         initComponents();
         om=OrderManager.get();
+        cm=ConfigurationManager.getConfigurationManager();
+
+        //load geometry
+        cm.getGeometry(this,"OrderManager", "10,10,600,400");
+
+        //User uses window close
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                discardClose();
+                }
+            });
+
         orderTable1.setModel(om.getOrderTable());
         //setup listener for selection change
         ListSelectionModel selModel=orderTable1.getSelectionModel();
@@ -55,6 +70,24 @@ public class OrderManagerGui extends javax.swing.JFrame {
         messageTable.getColumnModel().getColumn(1).setPreferredWidth(200);
         messageTable.getColumnModel().getColumn(2).setPreferredWidth(500);
     }
+
+//Deprecated: moved to configmanager
+/*    private void getGeometry() {
+        String[] propval;
+        String prop;
+        prop=cm.getProperty("Window.OrderManager", "10,10,600,400");
+        propval=prop.split(",");
+        if (propval.length==4) {
+            this.setLocation(Integer.parseInt(propval[0]), Integer.parseInt(propval[1]));
+            this.setSize(Integer.parseInt(propval[2]), Integer.parseInt(propval[3]));
+        }
+    }
+
+    private void setGeometry() {
+        String posSze;
+        posSze=""+this.getX()+","+this.getY()+","+this.getWidth()+","+this.getHeight();
+        cm.setProperty("Window.OrderManager", posSze);
+    } */
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -144,25 +177,24 @@ public class OrderManagerGui extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(orderTable)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(jButtonPurge)
-                            .add(366, 366, 366)
-                            .add(jButtonExit)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                            .add(jButtonRefresh))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, orderTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(jButtonPurge)
+                        .add(366, 366, 366)
+                        .add(jButtonExit)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jButtonRefresh)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(orderTable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 247, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(orderTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .add(18, 18, 18)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
+                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButtonRefresh)
                     .add(jButtonExit)
@@ -174,8 +206,15 @@ public class OrderManagerGui extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExitActionPerformed
+        cm.setGeometry(this,"OrderManager");
         this.setVisible( false );
         this.dispose();    }//GEN-LAST:event_jButtonExitActionPerformed
+
+    private void discardClose() {
+        cm.setGeometry(this,"OrderManager");
+        this.setVisible( false );
+        this.dispose();
+    }
 
     private void jButtonRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRefreshActionPerformed
         orderTable1.setModel(om.getOrderTable());

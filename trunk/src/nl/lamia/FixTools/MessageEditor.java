@@ -76,6 +76,10 @@ public class MessageEditor extends javax.swing.JDialog {
         this.allowUpdate=allowUpdate;
         jTextFieldMessage.setText(message);
 
+        int x=parent.getX();
+        int y=parent.getY();
+        this.setLocation(x+30, y+30);
+
         //Table
         headers=new Vector<String>();
         headers.add("tag");

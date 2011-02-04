@@ -52,6 +52,34 @@ public class ConfigurationManager {
         appProperties.setProperty(key, value);
     }
 
+    /***
+     * Retrieves a windows geometry from the config store, returns default values when unknown.
+     * @param jframe    Window concerned
+     * @param name      Store name (could be different for the same class)
+     * @param initial   Default values. Comma separated list x,y,width,height
+     */
+    public void getGeometry(JFrame jframe, String name, String initial) {
+        String[] propval;
+        String prop;
+        prop=this.getProperty("Window."+name, initial);
+        propval=prop.split(",");
+        if (propval.length==4) {
+            jframe.setLocation(Integer.parseInt(propval[0]), Integer.parseInt(propval[1]));
+            jframe.setSize(Integer.parseInt(propval[2]), Integer.parseInt(propval[3]));
+        }
+    }
+
+    /***
+     * Saves a windows geometry to the store. 
+     * @param jframe    Window concerned
+     * @param name      Store name (could be different for the same class)
+     */
+    public void setGeometry(JFrame jframe, String name) {
+        String posSze;
+        posSze=""+jframe.getX()+","+jframe.getY()+","+jframe.getWidth()+","+jframe.getHeight();
+        this.setProperty("Window."+name, posSze);
+    }
+
     public void setMainApp(MainWindow app) {
         this.mainGui=app;
     }
@@ -69,6 +97,8 @@ public class ConfigurationManager {
         appProperties.setProperty("TestMessage.checkDateTags" , "false");
         appProperties.setProperty("TestMessage.skipTags" , "10,9,45,34,17,37");
         appProperties.setProperty("QueuedMessage.staleTime", "30000");
+        appProperties.setProperty("TestMessage.matchClordid" , "false");
+        appProperties.setProperty("TestMessage.matchMsgType", "true");
     }
 
     public void loadProperties() {

@@ -25,7 +25,7 @@ import javax.swing.text.JTextComponent;
 public class EditPreferences extends javax.swing.JDialog {
 
     int timeout;
-    String ignoreUnexpectedTags,checkDateTags,skipTags;
+    String ignoreUnexpectedTags,checkDateTags,skipTags,matchMsgType,matchClordid;
     ConfigurationManager cm;
 
     /** Creates new form EditPreferences */
@@ -54,6 +54,19 @@ public class EditPreferences extends javax.swing.JDialog {
         };
         skipTags=cm.getProperty("TestMessage.skipTags","");
         jTextFieldIgnoreTags.setText(skipTags);
+        this.matchMsgType=cm.getProperty("TestMessage.matchMsgType","true");
+        if (this.matchMsgType.equalsIgnoreCase("true")) {
+            jCheckBoxMsgType.setSelected(true);
+        } else {
+            jCheckBoxMsgType.setSelected(false);
+        };
+        this.matchClordid=cm.getProperty("TestMessage.matchClordid","false");
+        if (this.matchClordid.equalsIgnoreCase("true")) {
+            jCheckBoxClordid.setSelected(true);
+        } else {
+            jCheckBoxClordid.setSelected(false);
+        };
+
 
         //Input verifiers
         InputVerifier verifier = new InputVerifier() {
@@ -95,6 +108,10 @@ public class EditPreferences extends javax.swing.JDialog {
         jCheckBoxIgnoreUnexpect = new javax.swing.JCheckBox();
         jButtonOk = new javax.swing.JButton();
         jButtonCancel = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jCheckBoxMsgType = new javax.swing.JCheckBox();
+        jCheckBoxClordid = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("General settings");
@@ -150,40 +167,69 @@ public class EditPreferences extends javax.swing.JDialog {
             }
         });
 
+        jLabel1.setText("Match incoming messages on:");
+
+        jCheckBoxMsgType.setText("MsgType (35)");
+
+        jCheckBoxClordid.setText("Clordid (11)");
+
+        jLabel2.setText("Settings for Expect steps:");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(316, Short.MAX_VALUE)
-                .add(jButtonCancel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jButtonOk)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(46, 46, 46)
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jTextFieldIgnoreTags, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 339, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(28, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(jLabel2)
+                .addContainerGap(313, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(34, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(29, 29, 29)
-                        .add(jLabel4)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 299, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jButtonCancel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jSliderTimeout, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(6, 6, 6)
-                        .add(selTimeout))
-                    .add(jCheckBoxCheckDate)
-                    .add(jCheckBoxIgnoreUnexpect))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(jButtonOk))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jCheckBoxCheckDate)
+                            .add(jCheckBoxIgnoreUnexpect))
+                        .addContainerGap(280, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel3)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jTextFieldIgnoreTags, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 339, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel4)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(jSliderTimeout, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(6, 6, 6)
+                                .add(selTimeout)))
+                        .addContainerGap(29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(21, 21, 21)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jCheckBoxMsgType)
+                                    .add(layout.createSequentialGroup()
+                                        .add(jCheckBoxClordid)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(jLabel1))
+                        .addContainerGap(266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(36, Short.MAX_VALUE)
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(jTextFieldIgnoreTags, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -196,11 +242,17 @@ public class EditPreferences extends javax.swing.JDialog {
                     .add(layout.createSequentialGroup()
                         .add(11, 11, 11)
                         .add(selTimeout)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(5, 5, 5)
                 .add(jCheckBoxCheckDate)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jCheckBoxIgnoreUnexpect)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 103, Short.MAX_VALUE)
+                .add(18, 18, 18)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBoxMsgType)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jCheckBoxClordid)
+                .add(42, 42, 42)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButtonOk)
                     .add(jButtonCancel))
@@ -238,6 +290,16 @@ public class EditPreferences extends javax.swing.JDialog {
         } else {
             cm.setProperty("TestMessage.ignoreUnexpectedTags","false");
         };
+        if (jCheckBoxClordid.isSelected()){
+            cm.setProperty("TestMessage.matchClordid","true");
+        } else {
+            cm.setProperty("TestMessage.matchClordid","false");
+        };
+        if (jCheckBoxMsgType.isSelected()){
+            cm.setProperty("TestMessage.matchMsgType","true");
+        } else {
+            cm.setProperty("TestMessage.matchMsgType","false");
+        };
         this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_jButtonOkActionPerformed
@@ -269,7 +331,11 @@ public class EditPreferences extends javax.swing.JDialog {
     private javax.swing.JButton jButtonCancel;
     private javax.swing.JButton jButtonOk;
     private javax.swing.JCheckBox jCheckBoxCheckDate;
+    private javax.swing.JCheckBox jCheckBoxClordid;
     private javax.swing.JCheckBox jCheckBoxIgnoreUnexpect;
+    private javax.swing.JCheckBox jCheckBoxMsgType;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JSlider jSliderTimeout;
