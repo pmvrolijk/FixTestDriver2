@@ -18,6 +18,7 @@ public class ExpectMessageStep implements TestStep {
 	private int timeout=10000;
 	
 	private FixEngine engine;
+        private QueueManager qm;
         private ConfigurationManager cm;
 	private SessionID session;
 	private quickfix.Message answer;
@@ -32,7 +33,8 @@ public class ExpectMessageStep implements TestStep {
 
 	@Override
 	public Boolean run() throws Exception {
-		engine.expectMessage(this);
+		//engine.expectMessage(this);
+                qm.expectMessage(this);  //Let's listen to the QueueManager better
 		logger.info("Waiting for answer...");
 		Boolean timeout=false;
 		synchronized (this) {
@@ -70,6 +72,7 @@ public class ExpectMessageStep implements TestStep {
 		this.received=false;
 		this.expect = expectStr.substring(1, expectStr.length()); //cut off the E
                 this.cm=ConfigurationManager.getConfigurationManager();
+                this.qm=QueueManager.get();
                 String toVal=cm.getProperty("ExpectMessageStep.timeout", "10000");
                 this.timeout=Integer.parseInt(toVal);
                 if (timeout==0) timeout=10000;

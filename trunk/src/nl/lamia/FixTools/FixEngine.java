@@ -62,11 +62,16 @@ public class FixEngine implements Application {
 	private ArrayList<SessionID> sessionList;
 	private MainWindow parentWindow;
 
-	private Set<ExpectMessageStep> expectations;
+	//private Set<ExpectMessageStep> expectations;
 	
         private static FixEngine fixengine=null;
 
-        private ArrayList<QueuedMessage> msgQueue;
+        //TODO
+        //move calls to the new Queuemanager
+        private QueueManager qm;
+
+
+        //private ArrayList<QueuedMessage> msgQueue;
 
         public static FixEngine getFixEngine() {
             if (fixengine==null) fixengine=new FixEngine();
@@ -93,17 +98,20 @@ public class FixEngine implements Application {
 	 */
 	public FixEngine() {
 	    this.load();  //read config and initialize
+
+            //The new QueueManager:
+            qm=QueueManager.get();
 	    //Store for Expect messages:
-	    expectations=new HashSet<ExpectMessageStep>();
-            msgQueue=new ArrayList<QueuedMessage>();
+	    //expectations=new HashSet<ExpectMessageStep>();
+            //msgQueue=new ArrayList<QueuedMessage>();
 
             //Timer for queue
-            Timer t=new Timer(300, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    deliver();
-                }
-            });
-            t.start();
+            //Timer t=new Timer(300, new ActionListener() {
+            //    public void actionPerformed(ActionEvent e) {
+            //        deliver();
+            //    }
+            //});
+            //t.start();
 	}
 
         public void load() {
@@ -122,6 +130,8 @@ public class FixEngine implements Application {
 	    storeFactory = new FileStoreFactory(settings);
 	    logFactory = new FileLogFactory(settings);
 	    messageFactory = new DefaultMessageFactory();
+
+            //Extract password/login
 
 	    try {
 			socketInitiator = new SocketInitiator(this, storeFactory, settings, logFactory, messageFactory);
@@ -158,10 +168,10 @@ public class FixEngine implements Application {
 		}
 	}
 
-	public Boolean expectMessage(ExpectMessageStep caller) {
-		expectations.add(caller);
-		return true;
-	}
+	//public Boolean expectMessage(ExpectMessageStep caller) {
+	//	expectations.add(caller);
+	//	return true;
+	//}
 
 	
 	@Override
@@ -200,7 +210,7 @@ public class FixEngine implements Application {
 		OrderManager om=OrderManager.get();
 		om.addMessage(message);
                 //DEBUG
-                try {logger.info(TestMessage.print(message));}
+                try {logger.debug(TestMessage.print(message));}
                 catch (Exception e) {logger.warn("Problem printing message.",e);}
 		logger.info("Outgoing: "+message.toString().replace('\001', '|'));
                 pushStatus();
@@ -210,14 +220,16 @@ public class FixEngine implements Application {
 	public void fromApp(Message message, SessionID sessionId)
 			throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue,
 			UnsupportedMessageType {
-		OrderManager om=OrderManager.get();
-		om.addMessage(message);
+		//OrderManager om=OrderManager.get();
+		//om.addMessage(message);
 		logger.info("Incoming: "+message.toString().replace('\001', '|'));
                 pushStatus();
 
-                String msgType=message.getHeader().getString(35);
-                msgQueue.add(new QueuedMessage(sessionId, msgType, message));
-                deliver();
+                //String msgType=message.getHeader().getString(35);
+                //TODO: get rid of the other calls to queues
+                qm.addMessage(message, sessionId);
+                //msgQueue.add(new QueuedMessage(sessionId, msgType, message));
+                //deliver();
 
 		//See whether somebody is interested:
 		/*for (ExpectMessageStep caller: expectations) {
@@ -234,12 +246,12 @@ public class FixEngine implements Application {
 	
 	}
 
-        public void cleanQueue() {
-            logger.info("Clearing message queue");
-            msgQueue.clear();
-        }
+        //public void cleanQueue() {
+        //    logger.info("Clearing message queue");
+        //    msgQueue.clear();
+        //}
 
-        private void deliver() {
+        /*private void deliver() {
             logger.debug("Attempting to send queued messages");
             logger.debug("Number of waiting msgs: "+msgQueue.size());
             QueuedMessage msg;
@@ -264,7 +276,7 @@ public class FixEngine implements Application {
 		}
                 if (msg.isStale()) msgQueue.remove(i);
             }
-        }
+        }*/
 
         private void pushStatus() {
             if (this.parentWindow==null || this.sessionList==null) return;

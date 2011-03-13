@@ -150,6 +150,9 @@ futFTSE,Z,201011,200,blabla<br>
       in the top line. When you exit the dialog with ok, the edited portion will be replaced in the file.</p>
       <p>The same dialog can be called form the Tools menu in the main window. In this case it won't save anything, but
       you can use it to inspect messages.</p>
+      <p>There is also a simple validation available in the Fix editor; press evaluate and it will try to interpret
+          your message as it will be when sent. Any problems with the format will show. It will also print your message
+          in a nicely formatted form, including repeating groups.</p>
       <br>  <h2>General settings</h2>
       <p>The behaviour of the tests can be adjusted by setting the following options:</p>
       <ul>
@@ -173,6 +176,14 @@ futFTSE,Z,201011,200,blabla<br>
           <li>GUI changes: saner resizing of windows, persistent size & location, other. </li>
           <li>Configuration of conditions for matching in expect steps (msgtype and/or clordid).</li>
           <li></li>
+      </ul>
+      <p>New in version 1.30:</p>
+      <ul>
+          <li>Queuing mechanism of messages now implemented in a dedicated class and thread.
+          Delivery was interfering with the Fix engine thread (spurious resends).</li>
+          <li>Added a simple validation to the Fix editor; it will try to interpret your message as it
+          will be when sent. Any problems with the format will show. It will also print your message
+          in a nicely formatted form, including repeating groups.</li>
       </ul>
       <br>  <h2>Feedback</h2>
       <p>I hope you find this tool useful. Any remarks, critiques, suggestions or gossip:

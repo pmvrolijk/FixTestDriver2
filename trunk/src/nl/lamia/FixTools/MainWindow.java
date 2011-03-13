@@ -38,7 +38,7 @@ import org.junit.runner.JUnitCore;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.29\n2010/12/08";
+    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.30\n2011/02/09";
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
     static {

@@ -25,17 +25,19 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="310" max="32767" attributes="0"/>
+              <EmptySpace pref="325" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="326" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+              <Component id="jButtonEvaluate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="221" max="-2" attributes="0"/>
               <Component id="jButtonCancel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jButtonOK" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="jScrollPane1" alignment="1" pref="513" max="32767" attributes="0"/>
-          <Component id="jTextFieldMessage" alignment="1" pref="513" max="32767" attributes="1"/>
+          <Component id="jScrollPane1" alignment="1" pref="528" max="32767" attributes="0"/>
+          <Component id="jTextFieldMessage" alignment="1" pref="528" max="32767" attributes="1"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -51,6 +53,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jButtonOK" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jButtonCancel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jButtonEvaluate" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -121,6 +124,14 @@
         </Property>
         <Property name="text" type="java.lang.String" value="FIX Message string. Hit enter to update."/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="jButtonEvaluate">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Evaluate"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonEvaluateActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

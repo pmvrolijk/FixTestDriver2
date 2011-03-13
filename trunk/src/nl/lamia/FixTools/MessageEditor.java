@@ -11,11 +11,15 @@
 
 package nl.lamia.FixTools;
 
+import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -23,6 +27,7 @@ import org.apache.log4j.Logger;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
 import quickfix.FieldType;
+import quickfix.Message;
 
 /**
  *
@@ -172,6 +177,7 @@ public class MessageEditor extends javax.swing.JDialog {
             }
         };
         jLabel1 = new javax.swing.JLabel();
+        jButtonEvaluate = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -189,7 +195,7 @@ public class MessageEditor extends javax.swing.JDialog {
             }
         });
 
-        jTextFieldMessage.setFont(new java.awt.Font("Courier New", 0, 13)); // NOI18N
+        jTextFieldMessage.setFont(new java.awt.Font("Courier New", 0, 13));
         jTextFieldMessage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextFieldMessageActionPerformed(evt);
@@ -221,6 +227,13 @@ public class MessageEditor extends javax.swing.JDialog {
         jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         jLabel1.setText("FIX Message string. Hit enter to update.");
 
+        jButtonEvaluate.setText("Evaluate");
+        jButtonEvaluate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEvaluateActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -228,15 +241,17 @@ public class MessageEditor extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(310, Short.MAX_VALUE))
+                .addContainerGap(325, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .add(326, 326, 326)
+                .add(8, 8, 8)
+                .add(jButtonEvaluate)
+                .add(221, 221, 221)
                 .add(jButtonCancel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButtonOK)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -250,7 +265,8 @@ public class MessageEditor extends javax.swing.JDialog {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButtonOK)
-                    .add(jButtonCancel))
+                    .add(jButtonCancel)
+                    .add(jButtonEvaluate))
                 .addContainerGap())
         );
 
@@ -286,6 +302,25 @@ public class MessageEditor extends javax.swing.JDialog {
         this.setVisible(false);
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
+    private void jButtonEvaluateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEvaluateActionPerformed
+        Message qfmsg;
+        String output;
+        String text=jTextFieldMessage.getText();
+        try {
+            qfmsg=TestMessage.parseString(text);
+            output=TestMessage.print(qfmsg);
+        } catch (Exception ex) {
+            JScrollPane scrollPane = new JScrollPane(new JLabel(ex.getMessage()));
+            scrollPane.setPreferredSize(new Dimension(200,100));
+            JOptionPane.showMessageDialog(this,
+                    scrollPane, "Invalid", JOptionPane.ERROR_MESSAGE);
+
+            return;
+        }
+        JOptionPane.showMessageDialog(this,
+                    output, "Valid", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jButtonEvaluateActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -317,6 +352,7 @@ public class MessageEditor extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonCancel;
+    private javax.swing.JButton jButtonEvaluate;
     private javax.swing.JButton jButtonOK;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;

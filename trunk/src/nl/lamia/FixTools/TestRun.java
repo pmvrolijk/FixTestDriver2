@@ -40,6 +40,7 @@ public class TestRun {
 	
 	private ArrayList<TestStep> steps;
 	private FixEngine fixEngine;
+        private QueueManager qm;
 	private String sessionName;
 	private String testname;
         private MainWindow mainApp;
@@ -52,6 +53,7 @@ public class TestRun {
 	 */
 	public TestRun(File file, FixEngine engine) {
 		this.fixEngine=engine;
+                this.qm=QueueManager.get();
 		this.testname=file.getName();
                 ConfigurationManager cm=ConfigurationManager.getConfigurationManager();
                 this.mainApp=cm.getMainApp();
@@ -117,7 +119,7 @@ public class TestRun {
 	 */
 	public Boolean run() {
 		Boolean result=false;
-                fixEngine.cleanQueue(); //TODO: Get rid of the old messages from previous tests
+                qm.cleanQueue(); //TODO: Get rid of the old messages from previous tests
                 if (mainApp!=null) mainApp.appendTestOutput("\nRunning test: "+testname);
 		logger.info("------------------------------------------------");
 		logger.info("- START test case: "+testname);

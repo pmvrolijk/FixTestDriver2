@@ -376,5 +376,97 @@ public class TestMessage {
         return dd.getFieldTypeEnum(field.getTag()) == FieldType.NumInGroup;
     }
 
-    
+
+	/***
+	 * Static helper function that parses a string to a new quickfix message from
+         * a pipe separated string. In dire need of refactoring, like this whole class.
+	 * The checksum is recalculated after substitutions are made.
+	 * @param messageStr
+	 * @return
+	 */
+	public static quickfix.Message parseString(String message) throws Exception {
+
+            Matcher matcher;
+            //Randomize ClientorderID
+            String newClordid="dummy";
+            matcher=CLORDID.matcher(message);
+            if (matcher.find()) {
+                    String clordid=matcher.group(1);
+                    int random = (int) (Math.random()*999999);
+                    newClordid=clordid+"-"+random;
+                    message=matcher.replaceFirst(newClordid);
+            }
+
+            //Dummy used client orderid from order manager
+            matcher=ORIGCLORDID.matcher(message);
+            if (matcher.find()) {
+                    message=matcher.replaceFirst("orig"+newClordid);
+            }
+
+            //Convert Dates
+            matcher=DATE.matcher(message);
+            String date="";
+            StringBuffer stringBuffer=new StringBuffer("");
+            while (matcher.find()) {
+                            if (matcher.group(1).equals("+")) {
+                                            int nr=Integer.parseInt(matcher.group(2));
+                                            String tm=matcher.group(3);
+                                            Date now=new Date();
+                                            Calendar cal = Calendar.getInstance();
+                                            cal.setTime(now);
+                                            if (tm.equals("d")) {
+                                                    cal.add(Calendar.DATE, nr);
+                                            } else {
+                                                    cal.add(Calendar.HOUR, nr);
+                                    }
+                                            Date newDate = cal.getTime();
+                                            if (!matcher.group(4).equals("")) {
+                                                            date=new SimpleDateFormat(matcher.group(4)).format(newDate);
+                                            } else {
+                                                    date=DATE_FORMAT.format(newDate);
+                                            }
+                                    matcher.appendReplacement(stringBuffer, date);
+                            } else {
+                                    //Simpel date replace
+                                    date=DATE_FORMAT.format(new Date());
+                                    matcher.appendReplacement(stringBuffer, date);
+                            }
+            }
+            matcher.appendTail(stringBuffer);
+            message=new String(stringBuffer.toString());
+
+            //Replace Product IDs
+            matcher=PRODUCT.matcher(message);
+            stringBuffer=new StringBuffer("");
+            String product,property,value;
+            Dictionary dict=Dictionary.getDict();
+            while (matcher.find()) {
+                            product=matcher.group(1);
+                            property=matcher.group(2);
+                            if (product.length()>0 && property.length()>0) {
+                                    value=dict.getProductProp(product, property);
+                                    if (value!=null) matcher.appendReplacement(stringBuffer, value);
+                            }
+            }
+            matcher.appendTail(stringBuffer);
+            message=new String(stringBuffer.toString());
+
+            //Quickfix SOH separators
+            message=message.replace('|', '\001');
+
+            //Calculate checksum
+            int to=message.indexOf("\00110=");
+            if (to > 1) {
+                    message=message.substring(0, to+1);
+            }
+            message += "10=" + CHECKSUM_FORMAT.format(checksum(message)) + '\001';
+
+            //Create and return quickfix message
+            quickfix.Message msg=null;
+            DataDictionary dd=dataDictionary.get(message.substring(2, 9));
+            msg=new Message(message, dd);
+            return msg;
+	}
+
+
 }
