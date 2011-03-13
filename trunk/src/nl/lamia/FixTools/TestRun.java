@@ -83,6 +83,10 @@ public class TestRun {
                 	if (temp.length<2) Assert.fail("No wait time specified, give time in ms.");
                 	int time=Integer.parseInt(temp[1]);
                 	steps.add(new WaitStep(time));
+                } else if (line.startsWith("USER")) {
+                	String text="";
+                        if (line.length()>4) text=line.substring(4);
+                	steps.add(new UserStep(text));
                 } else if (line.startsWith("RESET")) {
                 	String[] temp=line.split(" ");
                 	if (temp.length<2) Assert.fail("No testId specified, give clordid prefix.");

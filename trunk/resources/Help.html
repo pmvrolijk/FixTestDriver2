@@ -80,6 +80,8 @@ and open the template in the editor.
           If a tag is not specified in the expect line it will lead to a failed test, unless the option <i>ignore unexpected
           tags</i> is checked in general settings.</dd>
           <dt>WAIT <i>milliseconds</i> </dt><dd> Will wait for the specified number of milliseconds.</dd>
+          <dt>USER <i>message</i> </dt><dd> Will wait showing the user a dialog box. Execution continues only after the
+          user presses Ok. Can be used to build in a delay depending on an external action, like filling an order.</dd>
           <dt>RESET <i>clordid</i> </dt><dd> Will delete all entries in the order manager for this client order. Use this to
           make sure the test case runs cleanly. Especially before an <i>I</i> step where it is important that there is only
           one unique clordid stored so that the replace/cancel refers to this one.</dd>
@@ -99,8 +101,9 @@ WAIT 500<br>
 E8=FIX.4.2|9=102|35=j|34=259|49=EXEC|52=20100923-20:55:48.018|56=BANZAI|45=163|58=Unsupported Message Type|372=G|380=3|10=235<br>
 eDISCONNECT<br>
       </code>
-      <p>When using <i>expects</i> the test driver will not be able to distinguish between application level messages intended for
-      the Client order id at hand or others; it will try to match each message (except for heartbeat, resend, etc.) of the correct
+      <p>If matching on Client order id is set to <i>off</i> (see Settings), using <i>expects</i> the test driver will
+      not be able to distinguish between application level messages intended for the Client order id
+      at hand or others; it will try to match each message (except for heartbeat, resend, etc.) of the correct
       message type and session id to the next expect line. Incoming fills or acks for other orders might throw it off.
       For critical sections a small delay may be necessary. All waiting, unconsumed messages are cleared between testcases, but
       of course market fills could come in during a next test if the order isn't cancelled.</p>
@@ -160,6 +163,10 @@ futFTSE,Z,201011,200,blabla<br>
           <li>Wait for answer timeout: time in milliseconds to keep waiting for an answer in the expect step</li>
           <li>Check date tag format: optional strict checking of UTC timestamps for incoming messages</li>
           <li>Ignore unexpected tags: when checked, missing tags in the expect line will not lead to a failed test</li>
+          <li>Match incoming messages on: Allows you to specify whether expect steps are given all application
+          level messages, or only those matching client order id and/or msgtype. Specify the client order id in
+          the expect step as a regular expression for the match to succeed: e.g. &lt;Test1.*&gt;</li>
+
       </ul>
       <p>These options are active from the next test case run from the program. To make them default save the settings
       to disk using Edit - Save Settings</p>
@@ -184,6 +191,13 @@ futFTSE,Z,201011,200,blabla<br>
           <li>Added a simple validation to the Fix editor; it will try to interpret your message as it
           will be when sent. Any problems with the format will show. It will also print your message
           in a nicely formatted form, including repeating groups.</li>
+      </ul>
+      <p>New in version 1.31:</p>
+      <ul>
+          <li>Added support for Username/Password (tags 553, 554). Add the corresponding properties to the
+          session section in the Fixengine settings file (only supported for > 4.2).</li>
+          <li>Added a new Test step, USER. This will show a dialog with the specified text and hold execution
+          of the test case until the user presses Ok.</li>
       </ul>
       <br>  <h2>Feedback</h2>
       <p>I hope you find this tool useful. Any remarks, critiques, suggestions or gossip:

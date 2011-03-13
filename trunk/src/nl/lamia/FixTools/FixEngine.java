@@ -21,6 +21,7 @@ import quickfix.Application;
 import quickfix.ConfigError;
 import quickfix.DefaultMessageFactory;
 import quickfix.DoNotSend;
+import quickfix.FieldConvertError;
 import quickfix.FieldNotFound;
 import quickfix.FileLogFactory;
 import quickfix.FileStoreFactory;
@@ -131,8 +132,6 @@ public class FixEngine implements Application {
 	    logFactory = new FileLogFactory(settings);
 	    messageFactory = new DefaultMessageFactory();
 
-            //Extract password/login
-
 	    try {
 			socketInitiator = new SocketInitiator(this, storeFactory, settings, logFactory, messageFactory);
 	    } catch (ConfigError e) {
@@ -193,6 +192,26 @@ public class FixEngine implements Application {
 
 	@Override
 	public void toAdmin(Message message, SessionID sessionId) {
+                try {
+                    if (message.getHeader().getField(new MsgType()).getValue().equals(MsgType.LOGON)) {
+                        logger.debug("Logon message, check for user/pass");
+                        String username=settings.get(sessionId).getString("Username");
+                        String password=settings.get(sessionId).getString("Password");
+                        if (username!=null) {
+                            message.setField(new Username(username));
+                        }
+                        if (password!=null) {
+                            message.setField(new Password(password));
+                        }
+                    }
+                } catch (FieldNotFound ex) {
+                    logger.debug("Msg has no type!");
+                } catch (ConfigError ex) {
+                    logger.debug("No user/password specified.");
+                } catch (FieldConvertError ex) {
+                    logger.debug("Field convert error getting user/password!");
+                }
+
 		logger.info("Admin Outgoing: "+message.toString().replace('\001', '|'));
                 pushStatus();
 	}

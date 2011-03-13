@@ -38,7 +38,7 @@ import org.junit.runner.JUnitCore;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.30\n2011/02/09";
+    private static String VERSION="FixTestDriver\nP.M.Vrolijk\nVersion 1.31\n2011/03/13";
 
     private static Logger logger = Logger.getLogger(MainWindow.class);
     static {
@@ -734,13 +734,17 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void setFixStatus(DefaultTableModel tbl) {
         logger.debug("Received FixEngine update:"+tbl.toString());
-        int selected=this.jTableEngineStatus.getSelectedRow();
-        this.execStatusTbl=tbl;
-        this.jTableEngineStatus.setModel(execStatusTbl);
-        this.jTableEngineStatus.getColumnModel().getColumn(0).setMaxWidth(50);
-        this.jTableEngineStatus.getColumnModel().getColumn(2).setMaxWidth(70);
-        this.jTableEngineStatus.getColumnModel().getColumn(3).setMaxWidth(70);
-        if (selected!=-1) this.jTableEngineStatus.addRowSelectionInterval(selected, selected);
+        try {
+            int selected=this.jTableEngineStatus.getSelectedRow();
+            this.execStatusTbl=tbl;
+            this.jTableEngineStatus.setModel(execStatusTbl);
+            this.jTableEngineStatus.getColumnModel().getColumn(0).setMaxWidth(50);
+            this.jTableEngineStatus.getColumnModel().getColumn(2).setMaxWidth(70);
+            this.jTableEngineStatus.getColumnModel().getColumn(3).setMaxWidth(70);
+            if (selected!=-1) this.jTableEngineStatus.addRowSelectionInterval(selected, selected);
+        } catch (Exception ex) {
+            logger.warn("Fix Me: Fix engine status update synch error.");
+        }
     }
 
     public void loadTestCases(File dir) {
