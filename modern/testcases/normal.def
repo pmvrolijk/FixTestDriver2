@@ -1,0 +1,6 @@
+# Send a simple single order. No expects.
+
+iCONNECT FIX.4.2:BANZAI->EXEC
+#Simple test, only send
+I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI|52=20100919-17:36:58.865|56=EXEC|11=<Clordid=321>|21=1|38=67|40=2|44=3.4|54=1|55=LNUX|58=Ik wil graag wat shs|60=20100919-17:36:58.858|10=085|
+eDISCONNECT
