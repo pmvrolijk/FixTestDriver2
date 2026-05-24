@@ -15,7 +15,9 @@ public class SendMessageStep implements TestStep {
 
     @Override
     public void execute(TestContext context) throws Exception {
-        Message message = transformationService.transform(rawMessage);
+        // Strip the 'I' prefix
+        String actualRaw = rawMessage.startsWith("I") ? rawMessage.substring(1) : rawMessage;
+        Message message = transformationService.transform(actualRaw);
         String session = context.getCurrentSession();
         if (session == null) {
             throw new IllegalStateException("No active session. Use iCONNECT first.");

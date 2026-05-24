@@ -23,6 +23,9 @@ public class MessageTransformationService {
     private final OrderManagerService orderManagerService;
     private final DictionaryService dictionaryService;
 
+    @org.springframework.beans.factory.annotation.Value("${application.quickfix.dictionary-path:./config/quickfix}")
+    private String dictionaryPath;
+
     private static final DecimalFormat CHECKSUM_FORMAT = new DecimalFormat("000");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
     
@@ -37,13 +40,37 @@ public class MessageTransformationService {
 
     @PostConstruct
     public void init() throws ConfigError {
-        // In a real Spring Boot app, these paths might be configurable
-        dataDictionaries.put("FIX.4.0", new DataDictionary("resources/FIX40.xml"));
-        dataDictionaries.put("FIX.4.1", new DataDictionary("resources/FIX41.xml"));
-        dataDictionaries.put("FIX.4.2", new DataDictionary("resources/FIX42.xml"));
-        dataDictionaries.put("FIX.4.3", new DataDictionary("resources/FIX43.xml"));
-        dataDictionaries.put("FIX.4.4", new DataDictionary("resources/FIX44.xml"));
-        dataDictionaries.put("FIX.5.0", new DataDictionary("resources/FIX50.xml"));
+        log.info("Loading QuickFIX dictionaries from {}", dictionaryPath);
+        java.io.File dir = new java.io.File(dictionaryPath);
+        if (dir.exists() && dir.isDirectory()) {
+            java.io.File[] files = dir.listFiles((d, name) -> name.toLowerCase().endsWith(".xml"));
+            if (files != null) {
+                for (java.io.File file : files) {
+                    try {
+                        DataDictionary dd = new DataDictionary(file.getAbsolutePath());
+                        String name = file.getName().toUpperCase().replace(".XML", "");
+                        if (name.startsWith("FIX")) {
+                            // Extract version like FIX.4.2 from FIX42
+                            String version;
+                            if (name.length() >= 5) {
+                                version = "FIX." + name.substring(3, 4) + "." + name.substring(4, 5);
+                            } else {
+                                version = name;
+                            }
+                            dataDictionaries.put(version, dd);
+                            log.info("Loaded dictionary {} for version {}", file.getName(), version);
+                        } else {
+                            dataDictionaries.put(name, dd);
+                            log.info("Loaded dictionary {} with name {}", file.getName(), name);
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to load dictionary {}: {}", file.getName(), e.getMessage());
+                    }
+                }
+            }
+        } else {
+            log.warn("QuickFIX dictionary directory {} not found.", dictionaryPath);
+        }
     }
 
     /**
@@ -80,18 +107,36 @@ public class MessageTransformationService {
         // 4. Substitute Product IDs from Dictionary
         message = substituteProducts(message);
 
-        // 5. Convert separators and recalculate checksum
-        message = message.replace('|', '\001');
-        message = recalculateChecksum(message);
+        // 5. Build QuickFIX/J Message field by field
+        Map<String, String> fields = parse(message);
+        String beginString = fields.getOrDefault("8", "FIX.4.2");
+        String msgType = fields.get("35");
+        if (msgType == null) throw new IllegalArgumentException("Missing MsgType (35)");
 
-        // 6. Create QuickFIX/J Message
-        String beginString = getBeginString(message);
         DataDictionary dd = dataDictionaries.get(beginString);
         if (dd == null) {
             throw new IllegalArgumentException("Unknown or unsupported FIX version: " + beginString);
         }
 
-        return new Message(message, dd);
+        Message msg = new Message();
+        msg.getHeader().setString(8, beginString);
+        msg.getHeader().setString(35, msgType);
+
+        for (Map.Entry<String, String> entry : fields.entrySet()) {
+            int tag = Integer.parseInt(entry.getKey());
+            String value = entry.getValue();
+            if (tag == 8 || tag == 9 || tag == 10 || tag == 35) continue; // Handled specially or automatic
+
+            if (dd.isHeaderField(tag)) {
+                msg.getHeader().setString(tag, value);
+            } else if (dd.isTrailerField(tag)) {
+                msg.getTrailer().setString(tag, value);
+            } else {
+                msg.setString(tag, value);
+            }
+        }
+
+        return msg;
     }
 
     private String substituteDates(String message) {

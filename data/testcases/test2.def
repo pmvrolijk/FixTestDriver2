@@ -1,0 +1,4 @@
+#Example def file
+iCONNECT <Session>
+I8=FIX.4.2|9=136|35=D|34=40|49=BANZAI...
+eDISCONNECT

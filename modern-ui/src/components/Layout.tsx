@@ -17,7 +17,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
     return (
         <div className="min-h-screen w-full bg-slate-950 text-slate-50 flex flex-col">
             <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="w-full px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">F</div>
                         <h1 className="text-xl font-bold tracking-tight">FixTestDriver <span className="text-slate-500 font-normal">v2.0</span></h1>
@@ -59,7 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                     </button>
                 </div>
             </header>
-            <main className="flex-1 max-w-7xl w-full mx-auto p-6">
+            <main className="flex-1 w-full p-6">
                 {children}
             </main>
         </div>

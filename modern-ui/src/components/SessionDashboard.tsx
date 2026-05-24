@@ -10,19 +10,19 @@ interface SessionDashboardProps {
 
 export const SessionDashboard: React.FC<SessionDashboardProps> = ({ sessions, setSessions }) => {
     useEffect(() => {
-        apiClient.get('/api/sessions').then((res) => setSessions(res.data));
+        apiClient.get('/sessions').then((res) => setSessions(res.data));
     }, []);
 
     const handleLogon = async (sessionId: String) => {
-        await apiClient.post(`/api/sessions/${sessionId}/logon`);
+        await apiClient.post(`/sessions/${sessionId}/logon`);
     };
 
     const handleLogout = async (sessionId: String) => {
-        await apiClient.post(`/api/sessions/${sessionId}/logout`);
+        await apiClient.post(`/sessions/${sessionId}/logout`);
     };
 
     const handleReset = async (sessionId: String) => {
-        await apiClient.post(`/api/sessions/${sessionId}/reset`);
+        await apiClient.post(`/sessions/${sessionId}/reset`);
     };
 
     return (

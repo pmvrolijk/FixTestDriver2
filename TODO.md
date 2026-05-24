@@ -17,6 +17,7 @@
 - [x] Port `Dictionary` (Modern XML parsing and validation).
 - [x] Port `TestMessage` (Refactor macro substitution logic using modern Regex and `java.time`).
 - [x] Implement `FixEngineService` (Wrapper around QuickFIX/J `Application`).
+- [x] Add support for FIX Acceptor sessions in `FixEngineService`.
 
 ## Phase 3: Test Execution Engine
 - [x] Implement `TestStep` interface and modern implementations:
@@ -40,5 +41,21 @@
 - [x] Implement Message Log Viewer (with FIX tag highlighting).
 
 ## Phase 6: Validation
-- [ ] Run existing `.def` test cases to verify parity.
+- [x] Run existing `.def` test cases to verify parity (Loopback Test Passed).
 - [ ] Perform load testing for multiple concurrent sessions.
+
+## Phase 7: Cloud Readiness & Configuration
+- [x] Add `spring-boot-starter-actuator` dependency.
+- [x] Externalize backend properties in `application.yml`.
+- [x] Configure health and readiness probes in `application.yml`.
+- [x] Support file-based H2 persistence in `/data`.
+- [x] Refactor services to use externalized paths for configs and dictionaries.
+- [x] Set up frontend `.env` and `.env.local`.
+- [x] Document Docker/K8S volume mount requirements.
+
+## Phase 8: Containerization
+- [x] Create multi-stage Dockerfile for backend.
+- [x] Create multi-stage Dockerfile for frontend.
+- [x] Create `docker-compose.yml` for service orchestration.
+- [x] Verify deployment via `docker compose up`.
+

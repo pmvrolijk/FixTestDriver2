@@ -1,0 +1,9 @@
+# Loopback Validation Test
+# 1. Connect as Initiator
+iCONNECT FIX.4.2:LB_INIT->LB_ACC
+# 2. Send New Order Single
+I8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<Clordid=LB1>|21=1|38=100|40=1|54=1|55=MSFT|60=<Date>|
+# 3. Switch to Acceptor context to verify reception
+iCONNECT FIX.4.2:LB_ACC->LB_INIT
+# 4. Expect the same message to have arrived
+E8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<LB1-.*>|55=MSFT|

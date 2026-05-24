@@ -49,7 +49,7 @@ public class ExpectMessageStep implements TestStep {
                     received, 
                     expectedMessage.substring(1), // Remove 'E' prefix
                     Collections.emptyList(), 
-                    false
+                    true // ignoreUnexpected
             );
             
             if (!matches) {

@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: ./modern
+    container_name: fixtestdriver-backend
+    ports:
+      - "8080:8080"
+      - "9888:9888" # Local loopback port
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/fixtestdriver;AUTO_SERVER=TRUE
+      - FIX_CONFIG_PATH=/app/config/FixEngine.cfg
+      - TESTCASES_ROOT=/app/data/testcases
+      - PRODUCTS_DEF_PATH=/app/config/products.def
+      - QUICKFIX_DICT_PATH=/app/config/quickfix
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health/liveness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./modern-ui
+      args:
+        - VITE_API_BASE_URL=http://localhost:8080/api
+        - VITE_WS_URL=http://localhost:8080/ws-fix
+    container_name: fixtestdriver-ui
+    ports:
+      - "3001:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

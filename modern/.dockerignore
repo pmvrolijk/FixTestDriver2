@@ -1,0 +1,8 @@
+target/
+*.log
+.mvn/
+data/
+logs/
+config/FixEngine.cfg
+config/products.def
+config/quickfix/

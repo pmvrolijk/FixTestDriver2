@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createWebSocketClient } from './api/client';
 import { FixMessageEvent, SessionStatus } from './types';
 import { Layout } from './components/Layout';

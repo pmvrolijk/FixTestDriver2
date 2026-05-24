@@ -1,2 +1,8 @@
 .DS_Store
 /modern/target/
+/logs/**
+/data/FixEngine/**
+/data/*.db
+/modern/data/FixEngine/**
+/modern/data/*.db
+/modern/logs/**

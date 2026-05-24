@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8080/ws-fix';
 
 export const apiClient = axios.create({

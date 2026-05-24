@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: fixtestdriver
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:file:./data/fixtestdriver;AUTO_SERVER=TRUE}
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+application:
+  fix:
+    config-path: ${FIX_CONFIG_PATH:./config/FixEngine.cfg}
+  testcases:
+    root: ${TESTCASES_ROOT:./testcases}
+  dictionary:
+    filename: ${PRODUCTS_DEF_PATH:./config/products.def}
+  quickfix:
+    dictionary-path: ${QUICKFIX_DICT_PATH:./config/quickfix}
+
+logging:
+  level:
+    nl.lamia.fixtestdriver: INFO
+    org.quickfixj: INFO
+  file:
+    name: ${LOG_PATH:./logs}/fixtestdriver.log

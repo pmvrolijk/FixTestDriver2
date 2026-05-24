@@ -9,14 +9,14 @@ export const TestRunner: React.FC = () => {
     const [running, setRunning] = useState<string | null>(null);
 
     useEffect(() => {
-        apiClient.get('/api/tests').then((res) => setAvailableTests(res.data));
-        apiClient.get('/api/tests/results').then((res) => setResults(res.data.reverse()));
+        apiClient.get('/tests').then((res) => setAvailableTests(res.data));
+        apiClient.get('/tests/results').then((res) => setResults(res.data.reverse()));
     }, []);
 
     const runTest = async (path: string) => {
         setRunning(path);
         try {
-            const res = await apiClient.post(`/api/tests/run?path=${encodeURIComponent(path)}`);
+            const res = await apiClient.post(`/tests/run?path=${encodeURIComponent(path)}`);
             setResults((prev) => [res.data, ...prev]);
         } finally {
             setRunning(null);

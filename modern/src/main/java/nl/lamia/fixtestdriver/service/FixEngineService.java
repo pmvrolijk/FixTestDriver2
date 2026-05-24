@@ -28,13 +28,13 @@ public class FixEngineService implements Application {
     private final OrderManagerService orderManagerService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
-    @Value("${application.fix.config:config/FixEngine.cfg}")
+    @Value("${application.fix.config-path:config/FixEngine.cfg}")
     private String configPath;
 
     private SessionSettings settings;
     private Initiator initiator;
+    private Acceptor acceptor;
     
-    @Getter
     private final List<SessionID> sessions = new ArrayList<>();
     
     // Callbacks for UI/external listeners
@@ -53,25 +53,60 @@ public class FixEngineService implements Application {
         LogFactory logFactory = new FileLogFactory(settings);
         MessageFactory messageFactory = new DefaultMessageFactory();
 
-        // Support both Initiator and Acceptor if needed, but legacy used SocketInitiator
-        initiator = new SocketInitiator(this, storeFactory, settings, logFactory, messageFactory);
-        
-        sessions.addAll(initiator.getSessions());
-        for (SessionID sessionId : sessions) {
-            log.info("Initialized session: {}", sessionId);
+        // Identify Initiator and Acceptor sessions
+        List<SessionID> initiatorSessions = new ArrayList<>();
+        List<SessionID> acceptorSessions = new ArrayList<>();
+
+        java.util.Iterator<SessionID> sectionIterator = settings.sectionIterator();
+        while (sectionIterator.hasNext()) {
+            SessionID sessionId = sectionIterator.next();
+            String connectionType = settings.getString(sessionId, "ConnectionType");
+            if ("initiator".equalsIgnoreCase(connectionType)) {
+                initiatorSessions.add(sessionId);
+            } else if ("acceptor".equalsIgnoreCase(connectionType)) {
+                acceptorSessions.add(sessionId);
+            }
+        }
+
+        if (!initiatorSessions.isEmpty()) {
+            initiator = new SocketInitiator(this, storeFactory, settings, logFactory, messageFactory);
+            sessions.addAll(initiator.getSessions());
+            log.info("Initialized {} initiator sessions", initiatorSessions.size());
+        }
+
+        if (!acceptorSessions.isEmpty()) {
+            acceptor = new SocketAcceptor(this, storeFactory, settings, logFactory, messageFactory);
+            sessions.addAll(acceptor.getSessions());
+            log.info("Initialized {} acceptor sessions", acceptorSessions.size());
+        }
+
+        // Automatically start the engine
+        try {
+            start();
+        } catch (ConfigError e) {
+            log.error("Failed to start FIX engine automatically", e);
         }
     }
 
     public void start() throws ConfigError {
-        log.info("Starting FixEngine initiator...");
-        initiator.start();
+        if (initiator != null) {
+            log.info("Starting FIX initiator...");
+            initiator.start();
+        }
+        if (acceptor != null) {
+            log.info("Starting FIX acceptor...");
+            acceptor.start();
+        }
     }
 
     @PreDestroy
     public void stop() {
-        log.info("Stopping FixEngine initiator...");
+        log.info("Stopping FIX engine...");
         if (initiator != null) {
             initiator.stop();
+        }
+        if (acceptor != null) {
+            acceptor.stop();
         }
     }
 
@@ -119,8 +154,13 @@ public class FixEngineService implements Application {
     }
 
     public List<nl.lamia.fixtestdriver.dto.SessionStatusDto> getSessionStatuses() {
+        List<SessionID> allSessionIds = new java.util.ArrayList<>();
+        if (initiator != null) allSessionIds.addAll(initiator.getSessions());
+        if (acceptor != null) allSessionIds.addAll(acceptor.getSessions());
+
+        log.debug("Reporting status for {} sessions", allSessionIds.size());
         List<nl.lamia.fixtestdriver.dto.SessionStatusDto> statuses = new java.util.ArrayList<>();
-        for (SessionID sessionId : sessions) {
+        for (SessionID sessionId : allSessionIds) {
             Session session = Session.lookupSession(sessionId);
             if (session != null) {
                 statuses.add(nl.lamia.fixtestdriver.dto.SessionStatusDto.builder()
@@ -128,6 +168,12 @@ public class FixEngineService implements Application {
                         .loggedOn(session.isLoggedOn())
                         .expectedSenderNum(session.getExpectedSenderNum())
                         .expectedTargetNum(session.getExpectedTargetNum())
+                        .build());
+            } else {
+                // Still report the session even if lookup failed, but with restricted info
+                statuses.add(nl.lamia.fixtestdriver.dto.SessionStatusDto.builder()
+                        .sessionId(sessionId.toString())
+                        .loggedOn(false)
                         .build());
             }
         }
