@@ -88,6 +88,23 @@ public class TestRunnerService {
         return new File(testCasesRoot, testPath);
     }
 
+    public String getTestContent(String path) throws IOException {
+        File file = getTestFile(path);
+        if (!file.exists()) {
+            throw new IllegalArgumentException("Test file not found: " + path);
+        }
+        return java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    public void saveTestContent(String path, String content) throws IOException {
+        File file = getTestFile(path);
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        java.nio.file.Files.writeString(file.toPath(), content, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     private List<TestStep> loadSteps(File file) throws IOException {
         List<TestStep> steps = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {

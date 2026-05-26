@@ -64,5 +64,10 @@ Ensure Docker and Docker Compose are installed and running.
 
 ## Future Roadmap
 - [ ] Web-based Test Case Editor.
-- [ ] Dynamic FIX Session Creator/Editor.
+- [ ] Single message ad hoc sending.
+- [ ] Expanding scripting language features, loops, macros.
+- [ ] Exchange simulator.
+- [ ] Order view.
+- [ ] Dictionary editor.
+- [ ] Dynamic FIX Session Creator/Editor. Improved session management.
 - [ ] Multi-tenant support and RBAC.

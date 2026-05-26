@@ -7,6 +7,7 @@ import nl.lamia.fixtestdriver.testengine.TestRunnerService;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -20,6 +21,16 @@ public class TestController {
     @GetMapping
     public List<String> listTests() {
         return testRunnerService.listTests();
+    }
+
+    @GetMapping("/content")
+    public String getTestContent(@RequestParam String path) throws IOException {
+        return testRunnerService.getTestContent(path);
+    }
+
+    @PostMapping("/content")
+    public void saveTestContent(@RequestParam String path, @RequestBody String content) throws IOException {
+        testRunnerService.saveTestContent(path, content);
     }
 
     @PostMapping("/run")

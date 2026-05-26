@@ -3,6 +3,7 @@ package nl.lamia.fixtestdriver.controller;
 import lombok.RequiredArgsConstructor;
 import nl.lamia.fixtestdriver.dto.SessionStatusDto;
 import nl.lamia.fixtestdriver.service.FixEngineService;
+import nl.lamia.fixtestdriver.service.MessageTransformationService;
 import org.springframework.web.bind.annotation.*;
 import quickfix.SessionID;
 
@@ -14,6 +15,7 @@ import java.util.List;
 public class SessionController {
 
     private final FixEngineService fixEngineService;
+    private final MessageTransformationService messageTransformationService;
 
     @GetMapping
     public List<SessionStatusDto> getAllSessions() {
@@ -33,5 +35,15 @@ public class SessionController {
     @PostMapping("/{sessionId}/reset")
     public void reset(@PathVariable String sessionId) throws Exception {
         fixEngineService.reset(new SessionID(sessionId));
+    }
+
+    @PostMapping("/{sessionId}/send")
+    public void sendMessage(@PathVariable String sessionId, @RequestBody String rawMessage) throws Exception {
+        String actualRaw = rawMessage.startsWith("I") ? rawMessage.substring(1) : rawMessage;
+        quickfix.Message message = messageTransformationService.transform(actualRaw);
+        boolean success = fixEngineService.sendMessage(message, new SessionID(sessionId));
+        if (!success) {
+            throw new RuntimeException("Failed to send message to session: " + sessionId);
+        }
     }
 }

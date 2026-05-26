@@ -257,4 +257,27 @@ public class MessageTransformationService {
         }
         return Objects.equals(expected, actual);
     }
+
+    public String getFieldName(String beginString, int tag) {
+        DataDictionary dd = dataDictionaries.get(beginString);
+        if (dd == null) {
+            dd = dataDictionaries.get("FIX.4.2"); // fallback
+        }
+        if (dd != null && dd.isField(tag)) {
+            return dd.getFieldName(tag);
+        }
+        return "Unknown Tag";
+    }
+
+    public String getFieldType(String beginString, int tag) {
+        DataDictionary dd = dataDictionaries.get(beginString);
+        if (dd == null) {
+            dd = dataDictionaries.get("FIX.4.2"); // fallback
+        }
+        if (dd != null && dd.isField(tag)) {
+            FieldType type = dd.getFieldType(tag);
+            return type != null ? type.name() : "UNKNOWN";
+        }
+        return "UNKNOWN";
+    }
 }
