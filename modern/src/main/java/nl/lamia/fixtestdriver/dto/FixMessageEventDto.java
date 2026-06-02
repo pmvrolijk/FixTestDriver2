@@ -11,4 +11,6 @@ public class FixMessageEventDto {
     private String rawMessage;
     private String msgType;
     private long timestamp;
+    private int senderSeqNum;
+    private int targetSeqNum;
 }

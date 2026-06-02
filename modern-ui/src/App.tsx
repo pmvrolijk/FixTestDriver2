@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { createWebSocketClient } from './api/client';
-import { FixMessageEvent, SessionStatus } from './types';
-import { Layout } from './components/Layout';
-import { SessionDashboard } from './components/SessionDashboard';
-import { TestRunner } from './components/TestRunner';
-import { MessageLog } from './components/MessageLog';
+import {useEffect, useState} from 'react';
+import {createWebSocketClient} from './api/client';
+import {FixMessageEvent, SessionStatus} from './types';
+import {Layout} from './components/Layout';
+import {SessionDashboard} from './components/SessionDashboard';
+import {TestRunner} from './components/TestRunner';
+import {MessageLog} from './components/MessageLog';
 
 function App() {
     const [messages, setMessages] = useState<FixMessageEvent[]>([]);
@@ -13,7 +13,23 @@ function App() {
 
     useEffect(() => {
         const wsClient = createWebSocketClient(
-            (msg) => setMessages((prev) => [msg, ...prev].slice(0, 100)),
+            (msg) => {
+                setMessages((prev) => [msg, ...prev].slice(0, 100));
+                // Sync sequence numbers from message events to session state
+                setSessions((prev) => {
+                    const index = prev.findIndex((s) => s.sessionId === msg.sessionId);
+                    if (index >= 0 && (msg.senderSeqNum != null || msg.targetSeqNum != null)) {
+                        const newSessions = [...prev];
+                        newSessions[index] = {
+                            ...newSessions[index],
+                            ...(msg.senderSeqNum != null ? {expectedSenderNum: msg.senderSeqNum} : {}),
+                            ...(msg.targetSeqNum != null ? {expectedTargetNum: msg.targetSeqNum} : {})
+                        };
+                        return newSessions;
+                    }
+                    return prev;
+                });
+            },
             (status) => {
                 setSessions((prev) => {
                     const index = prev.findIndex((s) => s.sessionId === status.sessionId);
@@ -35,7 +51,8 @@ function App() {
 
     return (
         <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-            {activeTab === 'sessions' && <SessionDashboard sessions={sessions} setSessions={setSessions} />}
+            {activeTab === 'sessions' &&
+                <SessionDashboard sessions={sessions} setSessions={setSessions} messages={messages}/>}
             {activeTab === 'tests' && <TestRunner />}
             {activeTab === 'logs' && <MessageLog messages={messages} />}
         </Layout>

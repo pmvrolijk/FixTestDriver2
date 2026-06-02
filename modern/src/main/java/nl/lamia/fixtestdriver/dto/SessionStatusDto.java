@@ -10,4 +10,7 @@ public class SessionStatusDto {
     private boolean loggedOn;
     private int expectedSenderNum;
     private int expectedTargetNum;
+    private String connectionType;
+    private String host;
+    private String port;
 }

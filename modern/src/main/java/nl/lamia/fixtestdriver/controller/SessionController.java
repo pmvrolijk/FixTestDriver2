@@ -46,4 +46,17 @@ public class SessionController {
             throw new RuntimeException("Failed to send message to session: " + sessionId);
         }
     }
+
+    @PostMapping("/{sessionId}/disconnect")
+    public void disconnect(@PathVariable String sessionId) throws Exception {
+        quickfix.Session session = quickfix.Session.lookupSession(new SessionID(sessionId));
+        if (session != null) {
+            session.disconnect("User requested disconnect", false);
+        }
+    }
+
+    @PostMapping("/{sessionId}/stop")
+    public void stop(@PathVariable String sessionId) {
+        fixEngineService.stopSession(new SessionID(sessionId));
+    }
 }

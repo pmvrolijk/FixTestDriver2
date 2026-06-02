@@ -3,6 +3,9 @@ export interface SessionStatus {
     loggedOn: boolean;
     expectedSenderNum?: number;
     expectedTargetNum?: number;
+    connectionType?: string;
+    host?: string;
+    port?: string;
 }
 
 export interface FixMessageEvent {
@@ -11,6 +14,8 @@ export interface FixMessageEvent {
     rawMessage: string;
     msgType: string;
     timestamp: number;
+    senderSeqNum?: number;
+    targetSeqNum?: number;
 }
 
 export interface TestResult {
