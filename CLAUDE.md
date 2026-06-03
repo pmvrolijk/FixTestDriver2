@@ -97,5 +97,8 @@ docker compose logs -f         # Stream logs
 - **Java Features**: Records for DTOs, pattern matching `switch`, text blocks for templates
 - **Testing**: JUnit 5, AssertJ, Mockito — every new feature needs corresponding tests
 
+### React/TypeScript JSX Rules
+- **No `{/* ...*/}` comments inside ternary branches in `return` statements** — TypeScript's JSX parser chokes on a comment as the first child of a parenthesised ternary branch (e.g., `{condition ? {/* comment */} <div/> : null}`). If you need a label, wrap the branch in a fragment `<>{/* comment */}<div/></>` or use a plain JavaScript `//` comment before the expression instead.
+
 ## Working with Legacy Code
 The `/trunk` directory contains the original Java 6 Swing application. Use it only as a reference when porting features that haven't been migrated yet (e.g., `UserStep`, `DictionaryEditor`). Never modify files in `/trunk`.

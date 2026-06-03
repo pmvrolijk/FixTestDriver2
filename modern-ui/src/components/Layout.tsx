@@ -1,11 +1,6 @@
 import React from 'react';
-import { Activity, PlayCircle, List, Settings } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
-}
+import { Activity, PlayCircle, FileText } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -13,55 +8,63 @@ interface LayoutProps {
     onTabChange: (tab: 'sessions' | 'tests' | 'logs') => void;
 }
 
+const tabs = [
+   { id: 'sessions' as const, icon: Activity, label: 'Sessions' },
+   { id: 'tests' as const, icon: PlayCircle, label: 'Tests' },
+   { id: 'logs' as const, icon: FileText, label: 'Logs' },
+];
+
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
     return (
-        <div className="min-h-screen w-full bg-slate-950 text-slate-50 flex flex-col">
-            <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-                <div className="w-full px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">F</div>
-                        <h1 className="text-xl font-bold tracking-tight">FixTestDriver <span className="text-slate-500 font-normal">v2.0</span></h1>
+        <div className="min-h-screen w-full bg-[#0f111a] text-slate-50 flex flex-col">
+            {/* Header */}
+          <header className="border-b border-white/5 bg-[#0f111a]/80 backdrop-blur-xl sticky top-0 z-20">
+                <div className="w-full px-6 h-14 flex items-center justify-between">
+                    {/* Logo & Brand */}
+                   <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-lg shadow-blue-600/20">
+                           F
+                        </div>
+                       <div>
+                            <h1 className="text-base font-semibold tracking-tight leading-none">
+                               FixTestDriver
+                            </h1>
+                            <span className="text-[10px] text-surface-500 font-medium">v2.0</span>
+                        </div>
                     </div>
-                    <nav className="flex gap-1 bg-slate-800/50 p-1 rounded-xl">
-                        <button
-                            onClick={() => onTabChange('sessions')}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg transition-all",
-                                activeTab === 'sessions' ? "bg-blue-600 text-white shadow-lg" : "hover:bg-slate-700 text-slate-400"
-                            )}
-                        >
-                            <Activity size={18} />
-                            <span>Sessions</span>
-                        </button>
-                        <button
-                            onClick={() => onTabChange('tests')}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg transition-all",
-                                activeTab === 'tests' ? "bg-blue-600 text-white shadow-lg" : "hover:bg-slate-700 text-slate-400"
-                            )}
-                        >
-                            <PlayCircle size={18} />
-                            <span>Tests</span>
-                        </button>
-                        <button
-                            onClick={() => onTabChange('logs')}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg transition-all",
-                                activeTab === 'logs' ? "bg-blue-600 text-white shadow-lg" : "hover:bg-slate-700 text-slate-400"
-                            )}
-                        >
-                            <List size={18} />
-                            <span>Logs</span>
-                        </button>
+
+                    {/* Tab Navigation */}
+                   <nav className="flex gap-1 bg-white/[0.03] p-1 rounded-xl border border-white/5">
+                        {tabs.map(({ id, icon: Icon, label }) => (
+                            <button
+                                key={id}
+                               onClick={() => onTabChange(id)}
+                                className={cn(
+                                    'flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium',
+                                    activeTab === id
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                                       : 'text-surface-400 hover:text-slate-200 hover:bg-white/[0.03]'
+                                )}
+                            >
+                               <Icon size={16} />
+                              <span className="hidden sm:inline">{label}</span>
+                            </button>
+                        ))}
                     </nav>
-                    <button className="p-2 text-slate-400 hover:text-slate-100 transition-colors">
-                        <Settings size={20} />
-                    </button>
+
+                    {/* Right section — version indicator */}
+                  <div className="flex items-center gap-2">
+                       <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" title="Connected" />
+                   </div>
                 </div>
             </header>
-            <main className="flex-1 w-full p-6">
-                {children}
+
+            {/* Main Content Area */}
+          <main className="flex-1 w-full p-6 overflow-hidden">
+                <div className="h-full animate-fade-in">
+                    {children}
+                </div>
             </main>
-        </div>
-    );
+         </div>
+     );
 };
