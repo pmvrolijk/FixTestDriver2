@@ -22,9 +22,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                 <div className="w-full px-6 h-14 flex items-center justify-between">
                     {/* Logo & Brand */}
                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-lg shadow-blue-600/20">
-                           F
-                        </div>
+                       <img src="fixtestdriver.svg" alt="FixTestDriver Logo" className="w-12 h-12 shadow-blue-600/50" />
                        <div>
                             <h1 className="text-base font-semibold tracking-tight leading-none">
                                FixTestDriver
