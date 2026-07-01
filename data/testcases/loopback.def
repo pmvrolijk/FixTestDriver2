@@ -7,3 +7,4 @@ I8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<Clordid=LB1>|21=1|38=100|40=1|54=1|55=M
 iCONNECT FIX.4.2:LB_ACC->LB_INIT
 # 4. Expect the same message to have arrived
 E8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<LB1-.*>|55=MSFT|
+WAIT 1000

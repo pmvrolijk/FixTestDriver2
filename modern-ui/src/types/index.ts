@@ -27,3 +27,10 @@ export interface TestResult {
     logOutput: string;
     errorMessage?: string;
 }
+
+export interface FileTreeNode {
+    name: string;
+    path: string;
+    directory: boolean;
+    children?: FileTreeNode[];
+}
