@@ -5,11 +5,12 @@ import {Layout} from './components/Layout';
 import {SessionDashboard} from './components/SessionDashboard';
 import {TestRunner} from './components/TestRunner';
 import {MessageLog} from './components/MessageLog';
+import {ProductsEditor} from './components/ProductsEditor';
 
 function App() {
     const [messages, setMessages] = useState<FixMessageEvent[]>([]);
     const [sessions, setSessions] = useState<SessionStatus[]>([]);
-    const [activeTab, setActiveTab] = useState<'sessions' | 'tests' | 'logs'>('sessions');
+    const [activeTab, setActiveTab] = useState<'sessions' | 'products' | 'tests' | 'logs'>('sessions');
 
     useEffect(() => {
         const wsClient = createWebSocketClient(
@@ -53,6 +54,7 @@ function App() {
         <Layout activeTab={activeTab} onTabChange={setActiveTab}>
             {activeTab === 'sessions' &&
                 <SessionDashboard sessions={sessions} setSessions={setSessions} messages={messages}/>}
+            {activeTab === 'products' && <ProductsEditor />}
             {activeTab === 'tests' && <TestRunner />}
             {activeTab === 'logs' && <MessageLog messages={messages} />}
         </Layout>

@@ -34,3 +34,8 @@ export interface FileTreeNode {
     directory: boolean;
     children?: FileTreeNode[];
 }
+
+export interface ProductTable {
+    headers: string[];
+    rows: string[][];
+}

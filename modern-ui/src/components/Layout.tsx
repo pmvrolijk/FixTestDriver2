@@ -1,15 +1,16 @@
 import React from 'react';
-import { Activity, PlayCircle, FileText } from 'lucide-react';
+import { Activity, FileText, PlayCircle, Table2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
     children: React.ReactNode;
-    activeTab: 'sessions' | 'tests' | 'logs';
-    onTabChange: (tab: 'sessions' | 'tests' | 'logs') => void;
+    activeTab: 'sessions' | 'products' | 'tests' | 'logs';
+    onTabChange: (tab: 'sessions' | 'products' | 'tests' | 'logs') => void;
 }
 
 const tabs = [
    { id: 'sessions' as const, icon: Activity, label: 'Sessions' },
+   { id: 'products' as const, icon: Table2, label: 'Products' },
    { id: 'tests' as const, icon: PlayCircle, label: 'Tests' },
    { id: 'logs' as const, icon: FileText, label: 'Logs' },
 ];
