@@ -1,6 +1,7 @@
 package nl.lamia.fixtestdriver.controller;
 
 import lombok.RequiredArgsConstructor;
+import nl.lamia.fixtestdriver.dto.SeqNumsDto;
 import nl.lamia.fixtestdriver.dto.SessionConfigDto;
 import nl.lamia.fixtestdriver.dto.SessionStatusDto;
 import nl.lamia.fixtestdriver.service.FixEngineService;
@@ -81,5 +82,22 @@ public class SessionController {
         sessionConfigService.addSession(dto);
         fixEngineService.restartConnectorForSession(dto.connectionType());
         return fixEngineService.getSessionStatuses();
+    }
+
+    @DeleteMapping("/{sessionId}")
+    public List<SessionStatusDto> deleteSession(@PathVariable String sessionId) throws Exception {
+        SessionID sid = new SessionID(sessionId);
+        String connectionType = fixEngineService.getConnectionType(sid);
+        fixEngineService.stopSession(sid);
+        sessionConfigService.removeSession(sessionId);
+        if (connectionType != null) {
+            fixEngineService.restartConnectorForSession(connectionType);
+        }
+        return fixEngineService.getSessionStatuses();
+    }
+
+    @PostMapping("/{sessionId}/setSeqNums")
+    public void setSeqNums(@PathVariable String sessionId, @RequestBody SeqNumsDto dto) throws Exception {
+        fixEngineService.setSeqNums(new SessionID(sessionId), dto.senderSeqNum(), dto.targetSeqNum());
     }
 }

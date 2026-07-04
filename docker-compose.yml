@@ -13,7 +13,7 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/fixtestdriver;AUTO_SERVER=TRUE
       - FIX_CONFIG_PATH=/app/config/FixEngine.cfg
-      - TESTCASES_ROOT=/app/data/testcases
+      - TESTCASES_ROOT=/app/config/testcases
       - PRODUCTS_DEF_PATH=/app/config/products.def
       - QUICKFIX_DICT_PATH=/app/config/quickfix
     restart: unless-stopped
