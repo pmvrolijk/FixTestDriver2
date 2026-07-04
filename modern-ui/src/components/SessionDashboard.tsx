@@ -17,6 +17,7 @@ import {
     Square,
     Hash,
     Radio,
+    Trash2,
 } from 'lucide-react';
 import {FixMessageEditorModal} from './FixMessageEditorModal';
 import {SessionConfigModal} from './SessionConfigModal';
@@ -34,6 +35,10 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
      const [confirmResetSession, setConfirmResetSession] = useState<SessionStatus | null>(null);
      const [configSession, setConfigSession] = useState<SessionStatus | null>(null);
      const [showAddModal, setShowAddModal] = useState(false);
+     const [confirmDeleteSession, setConfirmDeleteSession] = useState<SessionStatus | null>(null);
+     const [seqNumMode, setSeqNumMode] = useState<'reset' | 'explicit'>('reset');
+     const [explicitSender, setExplicitSender] = useState<number>(1);
+     const [explicitTarget, setExplicitTarget] = useState<number>(1);
      const messagesEndRef = useRef<HTMLDivElement>(null);
 
      useEffect(() => {
@@ -71,6 +76,19 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
          setConfirmResetSession(null);
          refetchSessions();
       };
+
+     const handleDelete = async (sessionId: String) => {
+         await apiClient.delete(`/sessions/${sessionId}`);
+         setSessions(prev => prev.filter(s => s.sessionId !== sessionId));
+         if (selectedSessionId === sessionId) setSelectedSessionId(null);
+         setConfirmDeleteSession(null);
+     };
+
+     const handleSetSeqNums = async (sessionId: String, senderSeqNum: number, targetSeqNum: number) => {
+         await apiClient.post(`/sessions/${sessionId}/setSeqNums`, { senderSeqNum, targetSeqNum });
+         setConfirmResetSession(null);
+         refetchSessions();
+     };
 
      const handleSend = async (rawMsg: string) => {
          if (selectedSessionId) {
@@ -226,7 +244,12 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                                                             <Send size={13} />
                                                         </button>
 
-                                                         <button onClick={() => setConfirmResetSession(session)}
+                                                         <button onClick={() => {
+                                                             setConfirmResetSession(session);
+                                                             setSeqNumMode('reset');
+                                                             setExplicitSender(session.expectedSenderNum ?? 1);
+                                                             setExplicitTarget(session.expectedTargetNum ?? 1);
+                                                         }}
                                                              className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-surface-500 hover:text-slate-300 transition-all duration-150"
                                                              title="Reset Sequence Numbers">
                                                              <RefreshCcw size={13} />
@@ -236,6 +259,11 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                                                              className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-surface-500 hover:text-slate-300 transition-all duration-150"
                                                              title="Edit Session Config">
                                                              <Settings size={13} />
+                                                         </button>
+                                                         <button onClick={() => setConfirmDeleteSession(session)}
+                                                             className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-rose-600/20 text-surface-500 hover:text-rose-400 transition-all duration-150"
+                                                             title="Delete Session">
+                                                             <Trash2 size={13} />
                                                          </button>
                                                   </div>
                                               </div>
@@ -335,39 +363,135 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                      onApplied={() => { setShowAddModal(false); refetchSessions(); }} />
              )}
 
+              {/* Delete Session Confirmation Modal */}
+             {confirmDeleteSession && (
+                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setConfirmDeleteSession(null)}>
+                     <div className="bg-surface-900 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl overflow-hidden animate-scale-up space-y-5" onClick={(e) => e.stopPropagation()}>
+                         <div className="flex items-start gap-4">
+                             <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
+                                 <Trash2 className="text-rose-500" size={20} />
+                             </div>
+                             <div>
+                                 <h3 className="text-base font-bold text-white">Delete Session?</h3>
+                                 <p className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20 mt-2">
+                                     {confirmDeleteSession.sessionId}
+                                 </p>
+                                 <p className="text-[11px] text-surface-500 mt-2">
+                                     This will stop the session, remove it from config, and restart the connector. This cannot be undone.
+                                 </p>
+                             </div>
+                         </div>
+                         <div className="flex justify-end gap-3 pt-2">
+                             <button onClick={() => setConfirmDeleteSession(null)}
+                                 className="btn-secondary px-5 py-2.5 text-sm rounded-xl">
+                                 Cancel
+                             </button>
+                             <button onClick={() => handleDelete(confirmDeleteSession.sessionId)}
+                                 className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-150">
+                                 Delete Session
+                             </button>
+                         </div>
+                     </div>
+                 </div>
+             )}
+
               {/* Sequence Reset Confirmation Modal */}
              {confirmResetSession && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setConfirmResetSession(null)}>
-                       <div className="bg-surface-900 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl overflow-hidden animate-scale-up space-y-5" onClick={(e) => e.stopPropagation()}>
-                           <div className="flex items-start gap-4">
-                               <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
-                                   <AlertTriangle className="text-rose-500" size={20} />
-                               </div>
-                              <div>
-                                   <h3 className="text-base font-bold text-white">Reset Sequence Numbers?</h3>
-                                  <p className="text-xs text-surface-400 mt-1.5 leading-relaxed">
-                                       Reset session sequence numbers back to 1?
-                                   </p>
-                                  <p className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20 mt-2">
-                                       {confirmResetSession.sessionId}
-                                   </p>
-                                  <p className="text-[11px] text-surface-500 mt-2">
-                                       This resets both sender and target sequence numbers. This cannot be undone.
-                                   </p>
-                              </div>
-                          </div>
-                           <div className="flex justify-end gap-3 pt-2">
-                               <button onClick={() => setConfirmResetSession(null)}
-                                   className="btn-secondary px-5 py-2.5 text-sm rounded-xl">
-                                  Cancel
-                               </button>
-                              <button onClick={() => handleReset(confirmResetSession.sessionId)}
-                                   className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-150">
-                                  Reset Sequences
-                               </button>
-                          </div>
-                      </div>
-                  </div>
+                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setConfirmResetSession(null)}>
+                     <div className="bg-surface-900 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl overflow-hidden animate-scale-up space-y-5" onClick={(e) => e.stopPropagation()}>
+                         <div className="flex items-start gap-4">
+                             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                                 <AlertTriangle className="text-amber-500" size={20} />
+                             </div>
+                             <div className="flex-1">
+                                 <h3 className="text-base font-bold text-white">Sequence Numbers</h3>
+                                 <p className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20 mt-2">
+                                     {confirmResetSession.sessionId}
+                                 </p>
+
+                                 <div className="flex gap-3 mt-3">
+                                     <div className="flex-1 bg-white/[0.03] border border-white/5 rounded-lg p-2.5 text-center">
+                                         <p className="text-[9px] text-surface-500 uppercase font-medium mb-1">Current Out (Sender)</p>
+                                         <p className="text-sm font-mono font-bold text-slate-200">{confirmResetSession.expectedSenderNum ?? '-'}</p>
+                                     </div>
+                                     <div className="flex-1 bg-white/[0.03] border border-white/5 rounded-lg p-2.5 text-center">
+                                         <p className="text-[9px] text-surface-500 uppercase font-medium mb-1">Current In (Target)</p>
+                                         <p className="text-sm font-mono font-bold text-slate-200">{confirmResetSession.expectedTargetNum ?? '-'}</p>
+                                     </div>
+                                 </div>
+
+                                 <div className="flex gap-2 mt-4">
+                                     <button
+                                         onClick={() => setSeqNumMode('reset')}
+                                         className={cn('flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-150',
+                                             seqNumMode === 'reset'
+                                                 ? 'bg-rose-600/20 border-rose-500/40 text-rose-300'
+                                                 : 'bg-white/[0.03] border-white/5 text-surface-400 hover:text-slate-300')}>
+                                         Reset to 1
+                                     </button>
+                                     <button
+                                         onClick={() => setSeqNumMode('explicit')}
+                                         className={cn('flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-150',
+                                             seqNumMode === 'explicit'
+                                                 ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
+                                                 : 'bg-white/[0.03] border-white/5 text-surface-400 hover:text-slate-300')}>
+                                         Set explicit values
+                                     </button>
+                                 </div>
+
+                                 {seqNumMode === 'explicit' && (
+                                     <div className="flex gap-3 mt-3">
+                                         <div className="flex-1">
+                                             <label htmlFor="explicit-sender" className="text-[9px] text-surface-500 uppercase font-medium block mb-1">Out (Sender)</label>
+                                             <input
+                                                 id="explicit-sender"
+                                                 type="number" min={1} step={1}
+                                                 value={explicitSender}
+                                                 onChange={(e) => setExplicitSender(Math.max(1, parseInt(e.target.value) || 1))}
+                                                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-blue-500/50"
+                                             />
+                                         </div>
+                                         <div className="flex-1">
+                                             <label htmlFor="explicit-target" className="text-[9px] text-surface-500 uppercase font-medium block mb-1">In (Target)</label>
+                                             <input
+                                                 id="explicit-target"
+                                                 type="number" min={1} step={1}
+                                                 value={explicitTarget}
+                                                 onChange={(e) => setExplicitTarget(Math.max(1, parseInt(e.target.value) || 1))}
+                                                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-blue-500/50"
+                                             />
+                                         </div>
+                                     </div>
+                                 )}
+
+                                 <div className="mt-3 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                     <p className="text-[11px] text-amber-400 leading-relaxed">
+                                         Manually changing sequence numbers can cause the counterparty to reject messages or trigger a ResendRequest if numbers are out of sync. Only do this when coordinated with the counterparty, or in a test environment where you control both sides.
+                                     </p>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <div className="flex justify-end gap-3 pt-2">
+                             <button onClick={() => setConfirmResetSession(null)}
+                                 className="btn-secondary px-5 py-2.5 text-sm rounded-xl">
+                                 Cancel
+                             </button>
+                             {seqNumMode === 'reset' ? (
+                                 <button onClick={() => handleReset(confirmResetSession.sessionId)}
+                                     className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-150">
+                                     Reset to 1
+                                 </button>
+                             ) : (
+                                 <button
+                                     onClick={() => handleSetSeqNums(confirmResetSession.sessionId, explicitSender, explicitTarget)}
+                                     className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-all duration-150">
+                                     Apply
+                                 </button>
+                             )}
+                         </div>
+                     </div>
+                 </div>
              )}
           </div>
       );
