@@ -50,6 +50,52 @@ class SessionConfigServiceTest {
         assertThat(joined).doesNotContain("SenderCompID=SENDER");
         assertThat(joined).contains("SenderCompID=OTHER");
         assertThat(joined).contains("[default]");
+        assertThat(joined).doesNotContain("\n\n\n");
+    }
+
+    @Test
+    void removeSession_removesOnlySession() throws IOException {
+        String cfg = """
+                [default]
+                HeartBtInt=30
+
+                [session]
+                BeginString=FIX.4.2
+                SenderCompID=SENDER
+                TargetCompID=TARGET
+                """;
+        SessionConfigService svc = serviceWithConfig(cfg);
+        svc.removeSession("FIX.4.2:SENDER->TARGET");
+
+        List<String> remaining = Files.readAllLines(tempDir.resolve("FixEngine.cfg"));
+        String joined = String.join("\n", remaining);
+        assertThat(joined).doesNotContain("[session]");
+        assertThat(joined).contains("[default]");
+        assertThat(joined).doesNotContain("SenderCompID=SENDER");
+    }
+
+    @Test
+    void removeSession_firstSessionNoLeadingBlank() throws IOException {
+        String cfg = """
+                [session]
+                BeginString=FIX.4.2
+                SenderCompID=FIRST
+                TargetCompID=T1
+
+                [session]
+                BeginString=FIX.4.2
+                SenderCompID=SECOND
+                TargetCompID=T2
+                """;
+        SessionConfigService svc = serviceWithConfig(cfg);
+        svc.removeSession("FIX.4.2:FIRST->T1");
+
+        List<String> remaining = Files.readAllLines(tempDir.resolve("FixEngine.cfg"));
+        assertThat(remaining).isNotEmpty();
+        assertThat(remaining.get(0)).isNotBlank();
+        String joined = String.join("\n", remaining);
+        assertThat(joined).contains("SenderCompID=SECOND");
+        assertThat(joined).doesNotContain("SenderCompID=FIRST");
     }
 
     @Test

@@ -80,11 +80,15 @@ public class SessionConfigService {
         if (bounds == null) {
             throw new IllegalArgumentException("Session not found in config: " + sessionId);
         }
-        // Remove the block
+        // Remove the block. findSessionBounds trims trailing blanks out of the range,
+        // so the trailing blank separator (if any) stays in place for the next section.
+        // For a mid-file session: remove the *preceding* blank to avoid a double blank.
+        // For a first-line session: the trailing blank ends up at index 0; remove that instead.
         lines.subList(bounds[0], bounds[1]).clear();
-        // Remove a single preceding blank line that separates sections
-        if (bounds[0] > 0 && bounds[0] <= lines.size() && lines.get(bounds[0] - 1).isBlank()) {
+        if (bounds[0] > 0 && lines.get(bounds[0] - 1).isBlank()) {
             lines.remove(bounds[0] - 1);
+        } else if (bounds[0] == 0 && !lines.isEmpty() && lines.get(0).isBlank()) {
+            lines.remove(0);
         }
         Files.write(Path.of(configPath), lines);
         log.info("Removed session {} from {}", sessionId, configPath);
