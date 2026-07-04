@@ -33,6 +33,9 @@ const MACROS = [
     { macro: '<Date+Nd>', example: '60=<Date+1d>', description: 'Timestamp N days from now in default format.' },
     { macro: '<Date+Nd,format>', example: '60=<Date+1d,yyyyMMdd>', description: 'Date with offset and a custom Java SimpleDateFormat pattern.' },
     { macro: '<Product=SYM,PROP>', example: '55=<Product=MSFT,Symbol>', description: 'Look up property PROP for product SYM from the Products dictionary. Defined on the Products tab.' },
+    { macro: '<ONEOF=[A,B,C]>', example: '54=<ONEOF=[1,2]>', description: 'Randomly pick one item from the comma-separated list.' },
+    { macro: '<RANGE=[min-max]>', example: '44=<RANGE=[99.50-100.50]>', description: 'Random decimal in the inclusive range. Precision matches the highest number of decimal places in min/max.' },
+    { macro: '<RND=[charset],len>', example: '17=<RND=[A-Z0-9],12>', description: 'Random string of the given length using the specified characters. Supports ranges (A-Z, 0-9, a-z) and individual characters.' },
     { macro: '<REGEX> (E lines)', example: '11=<Ord1-[0-9]*>', description: 'In Expect lines, any value inside <…> is matched as a Java regex against the actual field value.' },
 ];
 

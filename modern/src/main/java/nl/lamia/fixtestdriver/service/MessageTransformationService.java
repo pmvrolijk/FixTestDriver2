@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import quickfix.*;
 
 import jakarta.annotation.PostConstruct;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +38,10 @@ public class MessageTransformationService {
     private static final Pattern ORIGCLORDID_PATTERN = Pattern.compile("<OrigClordid=([^|]*)>");
     private static final Pattern FIELD_PATTERN = Pattern.compile("(\\d+)=([^\\|]+)\\|");
     private static final Pattern REGEX_EXPECT_PATTERN = Pattern.compile("<([^>]*)>");
+    private static final Pattern ONEOF_PATTERN = Pattern.compile("<ONEOF=\\[([^\\]]+)\\]>");
+    private static final Pattern RANGE_PATTERN = Pattern.compile("<RANGE=\\[(\\d+\\.?\\d*)-(\\d+\\.?\\d*)\\]>");
+    private static final Pattern RND_PATTERN = Pattern.compile("<RND=\\[([A-Za-z0-9\\-]+)\\],(\\d+)>");
+    private static final Pattern RND_CHARSET_RANGE = Pattern.compile("([A-Za-z0-9])-([A-Za-z0-9])");
 
     private final Map<String, DataDictionary> dataDictionaries = new HashMap<>();
 
@@ -107,7 +114,12 @@ public class MessageTransformationService {
         // 4. Substitute Product IDs from Dictionary
         message = substituteProducts(message);
 
-        // 5. Build QuickFIX/J Message field by field
+        // 5. Substitute random macros
+        message = substituteOneOf(message);
+        message = substituteRange(message);
+        message = substituteRnd(message);
+
+        // 6. Build QuickFIX/J Message field by field
         Map<String, String> fields = parse(message);
         String beginString = fields.getOrDefault("8", "FIX.4.2");
         String msgType = fields.get("35");
@@ -180,6 +192,81 @@ public class MessageTransformationService {
         }
         matcher.appendTail(sb);
         return sb.toString();
+    }
+
+    private String substituteOneOf(String message) {
+        Matcher matcher = ONEOF_PATTERN.matcher(message);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            String[] choices = matcher.group(1).split(",");
+            String chosen = choices[ThreadLocalRandom.current().nextInt(choices.length)].trim();
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(chosen));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    private String substituteRange(String message) {
+        Matcher matcher = RANGE_PATTERN.matcher(message);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            BigDecimal min = new BigDecimal(matcher.group(1));
+            BigDecimal max = new BigDecimal(matcher.group(2));
+            int scale = Math.max(min.scale(), max.scale());
+            BigDecimal range = max.subtract(min);
+            BigDecimal value = min.add(range.multiply(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble())));
+            value = value.setScale(scale, RoundingMode.HALF_UP);
+            if (value.compareTo(max) > 0) value = max;
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(value.toPlainString()));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    private String substituteRnd(String message) {
+        Matcher matcher = RND_PATTERN.matcher(message);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            String charsetSpec = matcher.group(1);
+            int length = Integer.parseInt(matcher.group(2));
+            String charset = expandCharset(charsetSpec);
+            if (charset.isEmpty()) {
+                matcher.appendReplacement(sb, "");
+                continue;
+            }
+            StringBuilder result = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                result.append(charset.charAt(ThreadLocalRandom.current().nextInt(charset.length())));
+            }
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(result.toString()));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    private String expandCharset(String spec) {
+        StringBuilder chars = new StringBuilder();
+        Matcher rangeMatcher = RND_CHARSET_RANGE.matcher(spec);
+        int lastEnd = 0;
+        while (rangeMatcher.find()) {
+            // Add any literal chars before this range
+            for (int i = lastEnd; i < rangeMatcher.start(); i++) {
+                char c = spec.charAt(i);
+                if (c != '-') chars.append(c);
+            }
+            char from = rangeMatcher.group(1).charAt(0);
+            char to = rangeMatcher.group(2).charAt(0);
+            for (char c = from; c <= to; c++) {
+                chars.append(c);
+            }
+            lastEnd = rangeMatcher.end();
+        }
+        // Add remaining literal chars
+        for (int i = lastEnd; i < spec.length(); i++) {
+            char c = spec.charAt(i);
+            if (c != '-') chars.append(c);
+        }
+        return chars.toString();
     }
 
     private String recalculateChecksum(String message) {
