@@ -73,6 +73,23 @@ public class SessionConfigService {
         log.info("Added new session {}:{}->{} to {}", dto.beginString(), dto.senderCompID(), dto.targetCompID(), configPath);
     }
 
+    public void removeSession(String sessionId) throws IOException {
+        SessionIdParts parts = parseSessionId(sessionId);
+        List<String> lines = new ArrayList<>(Files.readAllLines(Path.of(configPath)));
+        int[] bounds = findSessionBounds(lines, parts);
+        if (bounds == null) {
+            throw new IllegalArgumentException("Session not found in config: " + sessionId);
+        }
+        // Remove the block
+        lines.subList(bounds[0], bounds[1]).clear();
+        // Remove a single preceding blank line that separates sections
+        if (bounds[0] > 0 && bounds[0] <= lines.size() && lines.get(bounds[0] - 1).isBlank()) {
+            lines.remove(bounds[0] - 1);
+        }
+        Files.write(Path.of(configPath), lines);
+        log.info("Removed session {} from {}", sessionId, configPath);
+    }
+
     // Returns the map of key→value from the [session] block matching the given ID parts
     private Map<String, String> findSessionProps(List<String> lines, SessionIdParts target) {
         for (int i = 0; i < lines.size(); i++) {
