@@ -10,6 +10,13 @@ interface FixField {
     type: string;
 }
 
+interface FieldSummary {
+    number: number;
+    name: string;
+    type: string;
+    hasEnums: boolean;
+}
+
 interface FixMessageEditorModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -36,6 +43,10 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const [allDictFields, setAllDictFields] = useState<FieldSummary[]>([]);
+    const [fieldSearchQuery, setFieldSearchQuery] = useState('');
+    const [showFieldDropdown, setShowFieldDropdown] = useState(false);
+
     const parseTimeout = useRef<any | null>(null);
 
      // Close on ESC
@@ -47,6 +58,15 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
         document.addEventListener('keydown', handleKey);
         return () => document.removeEventListener('keydown', handleKey);
     }, [isOpen, onClose]);
+
+    // Load dictionary fields for field-name search
+    useEffect(() => {
+        if (!isOpen) return;
+        const versionId = beginString.replace(/\./g, '');
+        apiClient.get<FieldSummary[]>(`/fix-dictionary/${versionId}/fields`)
+            .then(r => setAllDictFields(r.data))
+            .catch(() => setAllDictFields([]));
+    }, [isOpen, beginString]);
 
      // Initial load and parse
     useEffect(() => {
@@ -158,6 +178,24 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
          }
      };
 
+    const filteredDictFields = fieldSearchQuery.length >= 1
+        ? allDictFields
+            .filter(f =>
+                f.name.toLowerCase().includes(fieldSearchQuery.toLowerCase()) ||
+                String(f.number).includes(fieldSearchQuery)
+            )
+            .slice(0, 8)
+        : [];
+
+    const handleAddFieldFromDict = (f: FieldSummary) => {
+        const newField: FixField = { tag: f.number, name: f.name, value: '', type: f.type };
+        const updated = [...fields, newField];
+        setFields(updated);
+        updateRawFromFields(updated);
+        setFieldSearchQuery('');
+        setShowFieldDropdown(false);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -223,15 +261,42 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
 
                    {/* Decoded Fields Table */}
                   <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                          <label className="block text-[10px] font-bold text-surface-500 uppercase tracking-wider">Decoded Fields</label>
-                          <button
-                                 onClick={handleAddField}
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/10"
-                             >
-                               <Plus size={12} />
-                               <span>Add Field</span>
-                           </button>
+                      <div className="flex justify-between items-center gap-3">
+                          <label className="block text-[10px] font-bold text-surface-500 uppercase tracking-wider shrink-0">Decoded Fields</label>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                              <div className="relative">
+                                  <input
+                                      type="text"
+                                      value={fieldSearchQuery}
+                                      onChange={(e) => { setFieldSearchQuery(e.target.value); setShowFieldDropdown(true); }}
+                                      onFocus={() => setShowFieldDropdown(true)}
+                                      onBlur={() => setTimeout(() => setShowFieldDropdown(false), 150)}
+                                      placeholder="Search field by name…"
+                                      className="bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 placeholder-surface-700 focus:outline-none focus:border-blue-500/50 w-48 transition-colors"
+                                  />
+                                  {showFieldDropdown && filteredDictFields.length > 0 && (
+                                      <div className="absolute right-0 top-full mt-1 z-20 bg-[#1a1d2e] border border-white/10 rounded-xl shadow-xl w-64 max-h-56 overflow-y-auto">
+                                          {filteredDictFields.map(f => (
+                                              <button
+                                                  key={f.number}
+                                                  onMouseDown={() => handleAddFieldFromDict(f)}
+                                                  className="w-full text-left px-3 py-2 text-xs hover:bg-white/[0.05] flex items-center justify-between gap-2"
+                                              >
+                                                  <span className="text-slate-200 font-medium">{f.name}</span>
+                                                  <span className="text-surface-500 font-mono shrink-0">{f.number}</span>
+                                              </button>
+                                          ))}
+                                      </div>
+                                  )}
+                              </div>
+                              <button
+                                  onClick={handleAddField}
+                                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/10 shrink-0"
+                              >
+                                  <Plus size={12} />
+                                  <span>Add Field</span>
+                              </button>
+                          </div>
                       </div>
 
                       <div className="border border-white/5 rounded-xl overflow-hidden bg-white/[0.02]">

@@ -1,11 +1,12 @@
-import React from 'react';
-import { Activity, FileText, PlayCircle, Table2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, BookOpen, FileText, HelpCircle, PlayCircle, Table2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { HelpModal } from './HelpModal';
 
 interface LayoutProps {
     children: React.ReactNode;
-    activeTab: 'sessions' | 'products' | 'tests' | 'logs';
-    onTabChange: (tab: 'sessions' | 'products' | 'tests' | 'logs') => void;
+    activeTab: 'sessions' | 'products' | 'tests' | 'logs' | 'dictionary';
+    onTabChange: (tab: 'sessions' | 'products' | 'tests' | 'logs' | 'dictionary') => void;
 }
 
 const tabs = [
@@ -13,9 +14,12 @@ const tabs = [
    { id: 'products' as const, icon: Table2, label: 'Products' },
    { id: 'tests' as const, icon: PlayCircle, label: 'Tests' },
    { id: 'logs' as const, icon: FileText, label: 'Logs' },
+   { id: 'dictionary' as const, icon: BookOpen, label: 'Dictionary' },
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
+    const [helpOpen, setHelpOpen] = useState(false);
+
     return (
         <div className="min-h-screen w-full bg-[#0f111a] text-slate-50 flex flex-col">
             {/* Header */}
@@ -51,12 +55,21 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                         ))}
                     </nav>
 
-                    {/* Right section — version indicator */}
+                    {/* Right section */}
                   <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setHelpOpen(true)}
+                            className="text-slate-400 hover:text-slate-100 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+                            title="Help & Reference"
+                        >
+                            <HelpCircle size={16} />
+                        </button>
                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" title="Connected" />
                    </div>
                 </div>
             </header>
+
+            <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
 
             {/* Main Content Area */}
           <main className="flex-1 w-full p-6 overflow-hidden">
