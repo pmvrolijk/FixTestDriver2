@@ -34,6 +34,7 @@ public class FixEngineService implements Application {
     private SessionSettings settings;
     private Initiator initiator;
     private Acceptor acceptor;
+    private final MessageFactory messageFactory = new DefaultMessageFactory();
 
     private final List<SessionID> sessions = new ArrayList<>();
 
@@ -51,7 +52,6 @@ public class FixEngineService implements Application {
 
         MessageStoreFactory storeFactory = new FileStoreFactory(settings);
         LogFactory logFactory = new FileLogFactory(settings);
-        MessageFactory messageFactory = new DefaultMessageFactory();
 
         // Identify Initiator and Acceptor sessions
         List<SessionID> initiatorSessions = new ArrayList<>();
@@ -97,6 +97,25 @@ public class FixEngineService implements Application {
             log.info("Starting FIX acceptor...");
             acceptor.start();
         }
+    }
+
+    public void restartConnectorForSession(String connectionType) throws Exception {
+        log.info("Restarting {} connector after config change", connectionType);
+        try (FileInputStream fis = new FileInputStream(configPath)) {
+            settings = new SessionSettings(fis);
+        }
+        MessageStoreFactory newStoreFactory = new FileStoreFactory(settings);
+        LogFactory newLogFactory = new FileLogFactory(settings);
+        if ("initiator".equalsIgnoreCase(connectionType)) {
+            if (initiator != null) initiator.stop();
+            initiator = new SocketInitiator(this, newStoreFactory, settings, newLogFactory, messageFactory);
+            initiator.start();
+        } else if ("acceptor".equalsIgnoreCase(connectionType)) {
+            if (acceptor != null) acceptor.stop();
+            acceptor = new SocketAcceptor(this, newStoreFactory, settings, newLogFactory, messageFactory);
+            acceptor.start();
+        }
+        log.info("{} connector restarted", connectionType);
     }
 
     @PreDestroy

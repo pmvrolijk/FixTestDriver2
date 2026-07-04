@@ -8,8 +8,10 @@ import {
     ArrowUpRight,
     LogOut,
     Play,
+    Plus,
     RefreshCcw,
     Send,
+    Settings,
     ShieldAlert,
     ShieldCheck,
     Square,
@@ -17,6 +19,7 @@ import {
     Radio,
 } from 'lucide-react';
 import {FixMessageEditorModal} from './FixMessageEditorModal';
+import {SessionConfigModal} from './SessionConfigModal';
 
 interface SessionDashboardProps {
     sessions: SessionStatus[];
@@ -29,6 +32,8 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
      const [selectedSessionBeginString, setSelectedSessionBeginString] = useState<string>('FIX.4.2');
      const [modalOpen, setModalOpen] = useState(false);
      const [confirmResetSession, setConfirmResetSession] = useState<SessionStatus | null>(null);
+     const [configSession, setConfigSession] = useState<SessionStatus | null>(null);
+     const [showAddModal, setShowAddModal] = useState(false);
      const messagesEndRef = useRef<HTMLDivElement>(null);
 
      useEffect(() => {
@@ -98,6 +103,11 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                              </span>
                         )}
                      </h2>
+                     <button onClick={() => setShowAddModal(true)}
+                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-600 border border-blue-500/20 rounded-lg transition-all duration-150">
+                         <Plus size={12} />
+                         Add Session
+                     </button>
                  </div>
 
                  <div className="flex-1 overflow-y-auto">
@@ -221,6 +231,12 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                                                              title="Reset Sequence Numbers">
                                                              <RefreshCcw size={13} />
                                                          </button>
+
+                                                         <button onClick={() => setConfigSession(session)}
+                                                             className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-surface-500 hover:text-slate-300 transition-all duration-150"
+                                                             title="Edit Session Config">
+                                                             <Settings size={13} />
+                                                         </button>
                                                   </div>
                                               </div>
                                           </div>
@@ -306,6 +322,18 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                 onSend={handleSend}
                  defaultBeginString={selectedSessionBeginString}
               />
+
+              {/* Session Config Modals */}
+             {configSession && (
+                 <SessionConfigModal mode="edit" sessionStatus={configSession}
+                     onClose={() => setConfigSession(null)}
+                     onApplied={() => { setConfigSession(null); refetchSessions(); }} />
+             )}
+             {showAddModal && (
+                 <SessionConfigModal mode="add"
+                     onClose={() => setShowAddModal(false)}
+                     onApplied={() => { setShowAddModal(false); refetchSessions(); }} />
+             )}
 
               {/* Sequence Reset Confirmation Modal */}
              {confirmResetSession && (

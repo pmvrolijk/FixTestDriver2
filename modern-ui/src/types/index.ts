@@ -39,3 +39,35 @@ export interface ProductTable {
     headers: string[];
     rows: string[][];
 }
+
+export interface SessionConfig {
+    beginString: string;
+    senderCompID: string;
+    targetCompID: string;
+    sessionQualifier?: string;
+    connectionType: string;
+    socketConnectHost?: string;
+    socketConnectPort?: string;
+    socketAcceptPort?: string;
+    startTime?: string;
+    endTime?: string;
+    heartBtInt?: string;
+    reconnectInterval?: string;
+    logonTimeout?: string;
+    logoutTimeout?: string;
+    username?: string;
+    password?: string;
+    resetOnLogon?: string;
+    resetOnLogout?: string;
+    resetOnDisconnect?: string;
+    useDataDictionary?: string;
+    dataDictionary?: string;
+    appDataDictionary?: string;
+    fileStorePath?: string;
+    fileLogPath?: string;
+    refreshOnLogon?: string;
+    checkCompID?: string;
+    checkLatency?: string;
+    validateFieldsHaveValues?: string;
+    validateFieldsOutOfOrder?: string;
+}

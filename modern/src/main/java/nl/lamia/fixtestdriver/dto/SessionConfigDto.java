@@ -1,0 +1,39 @@
+package nl.lamia.fixtestdriver.dto;
+
+public record SessionConfigDto(
+        // Identity
+        String beginString,
+        String senderCompID,
+        String targetCompID,
+        String sessionQualifier,
+        // Connection
+        String connectionType,
+        String socketConnectHost,
+        String socketConnectPort,
+        String socketAcceptPort,
+        // Timing
+        String startTime,
+        String endTime,
+        String heartBtInt,
+        String reconnectInterval,
+        String logonTimeout,
+        String logoutTimeout,
+        // Auth
+        String username,
+        String password,
+        String resetOnLogon,
+        String resetOnLogout,
+        String resetOnDisconnect,
+        // Dictionary
+        String useDataDictionary,
+        String dataDictionary,
+        String appDataDictionary,
+        // Advanced
+        String fileStorePath,
+        String fileLogPath,
+        String refreshOnLogon,
+        String checkCompID,
+        String checkLatency,
+        String validateFieldsHaveValues,
+        String validateFieldsOutOfOrder
+) {}

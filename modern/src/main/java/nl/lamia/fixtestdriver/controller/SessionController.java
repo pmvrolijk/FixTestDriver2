@@ -1,9 +1,11 @@
 package nl.lamia.fixtestdriver.controller;
 
 import lombok.RequiredArgsConstructor;
+import nl.lamia.fixtestdriver.dto.SessionConfigDto;
 import nl.lamia.fixtestdriver.dto.SessionStatusDto;
 import nl.lamia.fixtestdriver.service.FixEngineService;
 import nl.lamia.fixtestdriver.service.MessageTransformationService;
+import nl.lamia.fixtestdriver.service.SessionConfigService;
 import org.springframework.web.bind.annotation.*;
 import quickfix.SessionID;
 
@@ -16,6 +18,7 @@ public class SessionController {
 
     private final FixEngineService fixEngineService;
     private final MessageTransformationService messageTransformationService;
+    private final SessionConfigService sessionConfigService;
 
     @GetMapping
     public List<SessionStatusDto> getAllSessions() {
@@ -58,5 +61,25 @@ public class SessionController {
     @PostMapping("/{sessionId}/stop")
     public void stop(@PathVariable String sessionId) {
         fixEngineService.stopSession(new SessionID(sessionId));
+    }
+
+    @GetMapping("/{sessionId}/config")
+    public SessionConfigDto getConfig(@PathVariable String sessionId) throws Exception {
+        return sessionConfigService.getSessionConfig(sessionId);
+    }
+
+    @PutMapping("/{sessionId}/config")
+    public List<SessionStatusDto> saveConfig(@PathVariable String sessionId,
+                                             @RequestBody SessionConfigDto dto) throws Exception {
+        sessionConfigService.saveSessionConfig(sessionId, dto);
+        fixEngineService.restartConnectorForSession(dto.connectionType());
+        return fixEngineService.getSessionStatuses();
+    }
+
+    @PostMapping("/new")
+    public List<SessionStatusDto> addSession(@RequestBody SessionConfigDto dto) throws Exception {
+        sessionConfigService.addSession(dto);
+        fixEngineService.restartConnectorForSession(dto.connectionType());
+        return fixEngineService.getSessionStatuses();
     }
 }
