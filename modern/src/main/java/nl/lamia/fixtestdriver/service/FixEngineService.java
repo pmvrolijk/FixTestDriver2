@@ -160,6 +160,22 @@ public class FixEngineService implements Application {
         }
     }
 
+    public String getConnectionType(SessionID sessionId) {
+        try {
+            return settings != null ? settings.getString(sessionId, "ConnectionType") : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public void setSeqNums(SessionID sessionId, int senderSeqNum, int targetSeqNum) throws IOException {
+        Session session = Session.lookupSession(sessionId);
+        if (session != null) {
+            session.setNextSenderMsgSeqNum(senderSeqNum);
+            session.setNextTargetMsgSeqNum(targetSeqNum);
+        }
+    }
+
     /**
      * Stop a session: for acceptors, sends LOGOUT then disconnects (prevents auto-reconnect). For initiators, just disconnects.
      */
