@@ -6,6 +6,7 @@ import {
     AlertTriangle,
     ArrowDownLeft,
     ArrowUpRight,
+    Eye,
     LogOut,
     Play,
     Plus,
@@ -30,6 +31,7 @@ interface SessionDashboardProps {
 
 export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, setSessions, messages}) => {
      const [selectedSessionId, setSelectedSessionId] = useState<String | null>(null);
+    const [viewingMessage, setViewingMessage] = useState<FixMessageEvent | null>(null);
      const [selectedSessionBeginString, setSelectedSessionBeginString] = useState<string>('FIX.4.2');
      const [modalOpen, setModalOpen] = useState(false);
      const [confirmResetSession, setConfirmResetSession] = useState<SessionStatus | null>(null);
@@ -107,7 +109,7 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
          new Date(ts).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
      return (
-          <div className="flex flex-col gap-4 h-[calc(100vh-9rem)]">
+          <div className="flex flex-col gap-4 h-full">
 
               {/* Sessions List */}
              <div className="bg-surface-950 border border-white/5 rounded-2xl overflow-hidden shadow-lg flex flex-col max-h-[55%] min-h-[200px]">
@@ -329,9 +331,17 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                                                   {msg.msgType}
                                               </span>
 
-                                              <span className="text-slate-300 break-all select-all font-mono text-[11px] leading-relaxed fix-message">
+                                              <span className="text-slate-300 break-all font-mono text-[11px] leading-relaxed fix-message flex-1">
                                                   {msg.rawMessage}
                                               </span>
+
+                                              <button
+                                                  onClick={() => setViewingMessage(msg)}
+                                                  className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-white/[0.05] text-surface-500 hover:text-slate-300"
+                                                  title="View message"
+                                              >
+                                                  <Eye size={12} />
+                                              </button>
                                           </div>
                                       );
                                   })}
@@ -350,6 +360,17 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
                 onSend={handleSend}
                  defaultBeginString={selectedSessionBeginString}
               />
+
+              {/* FIX Message View Modal (read-only) */}
+              {viewingMessage && (
+                  <FixMessageEditorModal
+                      isOpen={true}
+                      onClose={() => setViewingMessage(null)}
+                      initialMessage={viewingMessage.rawMessage}
+                      title={`View Message — ${viewingMessage.msgType}`}
+                      readOnly={true}
+                  />
+              )}
 
               {/* Session Config Modals */}
              {configSession && (

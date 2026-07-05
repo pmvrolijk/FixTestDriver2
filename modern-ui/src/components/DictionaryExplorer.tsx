@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, RefreshCw } from 'lucide-react';
 import { apiClient } from '../api/client';
 
@@ -246,9 +246,9 @@ export function DictionaryExplorer() {
 
             {/* Two-pane body */}
             <div className="flex gap-4 flex-1 min-h-0">
-                {/* Left pane */}
-                <div className="w-72 flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
-                    <Section title={`Messages (${filteredMessages.length})`}>
+                {/* Left pane — Messages (1/3) + Fields (2/3), each independently scrolling */}
+                <div className="w-80 flex-shrink-0 flex flex-col gap-3 min-h-0">
+                    <Section title={`Messages (${filteredMessages.length})`} className="flex-1 min-h-0">
                         {filteredMessages.map(m => (
                             <ListRow
                                 key={m.name}
@@ -264,7 +264,7 @@ export function DictionaryExplorer() {
                         )}
                     </Section>
 
-                    <Section title={`Fields (${filteredFields.length})`}>
+                    <Section title={`Fields (${filteredFields.length})`} className="min-h-0" style={{ flex: '2 1 0%' }}>
                         {filteredFields.map(f => (
                             <ListRow
                                 key={f.number}
@@ -336,13 +336,21 @@ export function DictionaryExplorer() {
 
 // --- Sub-components ---
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, className, style }: {
+    title: string;
+    children: React.ReactNode;
+    className?: string;
+    style?: React.CSSProperties;
+}) {
     return (
-        <div className="bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden">
-            <div className="px-3 py-2 border-b border-white/5 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+        <div
+            className={`bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden flex flex-col${className ? ` ${className}` : ''}`}
+            style={style}
+        >
+            <div className="px-3 py-2 border-b border-white/5 text-xs font-semibold text-slate-400 uppercase tracking-wide shrink-0">
                 {title}
             </div>
-            <div className="py-1">{children}</div>
+            <div className="py-1 flex-1 overflow-y-auto overflow-x-hidden min-h-0">{children}</div>
         </div>
     );
 }

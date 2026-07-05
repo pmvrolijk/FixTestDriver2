@@ -224,14 +224,14 @@ export const ProductsEditor: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-[calc(100vh-9rem)]">
+            <div className="flex items-center justify-center h-full">
                 <span className="text-surface-400 text-sm">Loading product table…</span>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-9rem)] gap-4">
+        <div className="flex flex-col h-full gap-4">
             {/* Toolbar */}
             <div className="card flex items-center gap-3 py-2 px-4">
                 <Table2 size={14} className="text-blue-400 shrink-0" />

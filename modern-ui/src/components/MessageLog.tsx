@@ -1,18 +1,20 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {cn} from '../lib/utils';
 import {FixMessageEvent} from '../types';
-import {Activity, ArrowDownLeft, ArrowUpRight, ShieldAlert, ShieldCheck} from 'lucide-react';
+import {Activity, ArrowDownLeft, ArrowUpRight, Eye, ShieldAlert, ShieldCheck} from 'lucide-react';
+import {FixMessageEditorModal} from './FixMessageEditorModal';
 
 interface MessageLogProps {
     messages: FixMessageEvent[];
 }
 
 export const MessageLog: React.FC<MessageLogProps> = ({messages}) => {
+     const [viewingMessage, setViewingMessage] = useState<FixMessageEvent | null>(null);
      const formatTime = (ts: number) =>
          new Date(ts).toLocaleTimeString([], {hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'});
 
      return (
-          <div className="bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-9rem)] shadow-lg">
+          <div className="bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col h-full shadow-lg">
               {/* Header */}
              <div className="p-4 border-b border-white/5 bg-white/[0.02] shrink-0">
                  <h2 className="card-title flex items-center gap-2">
@@ -77,7 +79,16 @@ export const MessageLog: React.FC<MessageLogProps> = ({messages}) => {
                                                  {msg.sessionId.split(':').pop()}
                                              </td>
                                              <td className="px-4 py-2.5 font-mono text-[10px] text-slate-300 break-all">
-                                                 {msg.rawMessage}
+                                                 <div className="flex items-start gap-2">
+                                                     <span className="flex-1">{msg.rawMessage}</span>
+                                                     <button
+                                                         onClick={(e) => { e.stopPropagation(); setViewingMessage(msg); }}
+                                                         className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-white/[0.05] text-surface-500 hover:text-slate-300"
+                                                         title="View message"
+                                                     >
+                                                         <Eye size={12} />
+                                                     </button>
+                                                 </div>
                                              </td>
                                          </tr>
                                      );
@@ -86,6 +97,15 @@ export const MessageLog: React.FC<MessageLogProps> = ({messages}) => {
                        </table>
                   )}
               </div>
+             {viewingMessage && (
+                 <FixMessageEditorModal
+                     isOpen={true}
+                     onClose={() => setViewingMessage(null)}
+                     initialMessage={viewingMessage.rawMessage}
+                     title={`View Message — ${viewingMessage.msgType}`}
+                     readOnly={true}
+                 />
+             )}
           </div>
       );
 };

@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {cn} from '../lib/utils';
 import {apiClient} from '../api/client';
-import {X, Plus, Trash2, Send, Save, RefreshCw, HelpCircle} from 'lucide-react';
+import {X, Plus, Trash2, Send, Save, RefreshCw, HelpCircle, Copy, CopyCheck} from 'lucide-react';
 
 interface FixField {
     tag: number;
@@ -25,6 +25,7 @@ interface FixMessageEditorModalProps {
     onSave?: (rawMsg: string) => void;
     onSend?: (rawMsg: string) => Promise<void>;
     defaultBeginString?: string;
+    readOnly?: boolean;
 }
 
 export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
@@ -34,7 +35,8 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
     title,
     onSave,
     onSend,
-    defaultBeginString = 'FIX.4.2'
+    defaultBeginString = 'FIX.4.2',
+    readOnly = false,
 }) => {
     const [rawMsg, setRawMsg] = useState(initialMessage);
     const [fields, setFields] = useState<FixField[]>([]);
@@ -42,6 +44,7 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     const [allDictFields, setAllDictFields] = useState<FieldSummary[]>([]);
     const [fieldSearchQuery, setFieldSearchQuery] = useState('');
@@ -196,6 +199,14 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
         setShowFieldDropdown(false);
     };
 
+    const copyAsMarkdown = () => {
+        const header = '| Tag | Name | Value | Type |\n|-----|------|-------|------|';
+        const rows = fields.map(f => `| ${f.tag} | ${f.name} | ${f.value} | ${f.type} |`).join('\n');
+        navigator.clipboard.writeText(`${header}\n${rows}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -206,22 +217,23 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
                 <div className="p-5 border-b border-white/5 bg-white/[0.02] flex justify-between items-center shrink-0">
                     <div>
                         <h3 className="text-base font-bold text-white">{title}</h3>
-                       <p className="text-[11px] text-surface-500 mt-0.5">Configure FIX tags and values</p>
+                       <p className="text-[11px] text-surface-500 mt-0.5">{readOnly ? 'Read-only field view' : 'Configure FIX tags and values'}</p>
                     </div>
                    <div className="flex items-center gap-3">
-                        {/* Dictionary selector */}
-                       <select
-                            value={beginString}
-                            onChange={(e) => setBeginString(e.target.value)}
-                            className="input-dark text-xs px-2.5 py-1.5"
-                        >
-                            <option value="FIX.4.0">FIX 4.0</option>
-                            <option value="FIX.4.1">FIX 4.1</option>
-                            <option value="FIX.4.2">FIX 4.2</option>
-                            <option value="FIX.4.3">FIX 4.3</option>
-                            <option value="FIX.4.4">FIX 4.4</option>
-                            <option value="FIX.5.0">FIX 5.0</option>
-                        </select>
+                        {!readOnly && (
+                            <select
+                                value={beginString}
+                                onChange={(e) => setBeginString(e.target.value)}
+                                className="input-dark text-xs px-2.5 py-1.5"
+                            >
+                                <option value="FIX.4.0">FIX 4.0</option>
+                                <option value="FIX.4.1">FIX 4.1</option>
+                                <option value="FIX.4.2">FIX 4.2</option>
+                                <option value="FIX.4.3">FIX 4.3</option>
+                                <option value="FIX.4.4">FIX 4.4</option>
+                                <option value="FIX.5.0">FIX 5.0</option>
+                            </select>
+                        )}
                        <button
                             onClick={onClose}
                             className="p-1.5 rounded-lg text-surface-500 hover:text-white hover:bg-white/[0.05] transition-all"
@@ -246,10 +258,14 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
                       <div className="relative">
                           <textarea
                                  value={rawMsg}
-                                onChange={handleRawMsgChange}
+                                readOnly={readOnly}
+                                onChange={readOnly ? undefined : handleRawMsgChange}
                                 placeholder="8=FIX.4.2|9=123|35=D|..."
                                 rows={2}
-                                className="w-full bg-white/[0.03] border border-white/5 rounded-xl p-4 font-mono text-[11px] text-slate-300 placeholder-surface-700 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 resize-none transition-colors"
+                                className={cn(
+                                    'w-full bg-white/[0.03] border border-white/5 rounded-xl p-4 font-mono text-[11px] text-slate-300 placeholder-surface-700 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 resize-none transition-colors',
+                                    readOnly && 'cursor-default'
+                                )}
                              />
                           {loading && (
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -264,38 +280,54 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
                       <div className="flex justify-between items-center gap-3">
                           <label className="block text-[10px] font-bold text-surface-500 uppercase tracking-wider shrink-0">Decoded Fields</label>
                           <div className="flex items-center gap-2 flex-1 justify-end">
-                              <div className="relative">
-                                  <input
-                                      type="text"
-                                      value={fieldSearchQuery}
-                                      onChange={(e) => { setFieldSearchQuery(e.target.value); setShowFieldDropdown(true); }}
-                                      onFocus={() => setShowFieldDropdown(true)}
-                                      onBlur={() => setTimeout(() => setShowFieldDropdown(false), 150)}
-                                      placeholder="Search field by name…"
-                                      className="bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 placeholder-surface-700 focus:outline-none focus:border-blue-500/50 w-48 transition-colors"
-                                  />
-                                  {showFieldDropdown && filteredDictFields.length > 0 && (
-                                      <div className="absolute right-0 top-full mt-1 z-20 bg-[#1a1d2e] border border-white/10 rounded-xl shadow-xl w-64 max-h-56 overflow-y-auto">
-                                          {filteredDictFields.map(f => (
-                                              <button
-                                                  key={f.number}
-                                                  onMouseDown={() => handleAddFieldFromDict(f)}
-                                                  className="w-full text-left px-3 py-2 text-xs hover:bg-white/[0.05] flex items-center justify-between gap-2"
-                                              >
-                                                  <span className="text-slate-200 font-medium">{f.name}</span>
-                                                  <span className="text-surface-500 font-mono shrink-0">{f.number}</span>
-                                              </button>
-                                          ))}
+                              {!readOnly && (
+                                  <>
+                                      <div className="relative">
+                                          <input
+                                              type="text"
+                                              value={fieldSearchQuery}
+                                              onChange={(e) => { setFieldSearchQuery(e.target.value); setShowFieldDropdown(true); }}
+                                              onFocus={() => setShowFieldDropdown(true)}
+                                              onBlur={() => setTimeout(() => setShowFieldDropdown(false), 150)}
+                                              placeholder="Search field by name…"
+                                              className="bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 placeholder-surface-700 focus:outline-none focus:border-blue-500/50 w-48 transition-colors"
+                                          />
+                                          {showFieldDropdown && filteredDictFields.length > 0 && (
+                                              <div className="absolute right-0 top-full mt-1 z-20 bg-[#1a1d2e] border border-white/10 rounded-xl shadow-xl w-64 max-h-56 overflow-y-auto">
+                                                  {filteredDictFields.map(f => (
+                                                      <button
+                                                          key={f.number}
+                                                          onMouseDown={() => handleAddFieldFromDict(f)}
+                                                          className="w-full text-left px-3 py-2 text-xs hover:bg-white/[0.05] flex items-center justify-between gap-2"
+                                                      >
+                                                          <span className="text-slate-200 font-medium">{f.name}</span>
+                                                          <span className="text-surface-500 font-mono shrink-0">{f.number}</span>
+                                                      </button>
+                                                  ))}
+                                              </div>
+                                          )}
                                       </div>
-                                  )}
-                              </div>
-                              <button
-                                  onClick={handleAddField}
-                                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/10 shrink-0"
-                              >
-                                  <Plus size={12} />
-                                  <span>Add Field</span>
-                              </button>
+                                      <button
+                                          onClick={handleAddField}
+                                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/10 shrink-0"
+                                      >
+                                          <Plus size={12} />
+                                          <span>Add Field</span>
+                                      </button>
+                                  </>
+                              )}
+                              {fields.length > 0 && (
+                                  <button
+                                      onClick={copyAsMarkdown}
+                                      title="Copy as Markdown"
+                                      className={cn(
+                                          'p-1.5 rounded-lg transition-colors shrink-0',
+                                          copied ? 'text-emerald-400 bg-emerald-500/10' : 'text-surface-500 hover:text-slate-300 hover:bg-white/[0.05]'
+                                      )}
+                                  >
+                                      {copied ? <CopyCheck size={14} /> : <Copy size={14} />}
+                                  </button>
+                              )}
                           </div>
                       </div>
 
@@ -307,13 +339,13 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
                                      <th className="py-2.5 px-4 w-44">Name</th>
                                      <th className="py-2.5 px-4">Value</th>
                                      <th className="py-2.5 px-4 w-32">Type</th>
-                                     <th className="py-2.5 px-4 w-12 text-center"></th>
+                                     {!readOnly && <th className="py-2.5 px-4 w-12 text-center"></th>}
                                  </tr>
                               </thead>
                               <tbody className="divide-y divide-white/[0.03]">
                                   {fields.length === 0 ? (
                                        <tr>
-                                           <td colSpan={5} className="py-8 text-center text-xs text-surface-600">
+                                           <td colSpan={readOnly ? 4 : 5} className="py-8 text-center text-xs text-surface-600">
                                                No fields to display — paste a raw message or add a field
                                            </td>
                                        </tr>
@@ -321,40 +353,50 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
                                       fields.map((field, idx) => (
                                            <tr key={idx} className="group hover:bg-white/[0.02] transition-colors">
                                                <td className="py-2 px-4">
-                                                   <input
+                                                   {readOnly ? (
+                                                       <span className="text-xs font-mono text-slate-300 px-2.5 py-1.5 block">{field.tag}</span>
+                                                   ) : (
+                                                       <input
                                                           type="text"
                                                           value={field.tag === 0 ? '' : field.tag}
                                                           onChange={(e) => handleFieldChange(idx, 'tag', e.target.value)}
                                                           className="w-full bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500/50 transition-colors"
                                                           placeholder="e.g. 55"
                                                        />
+                                                   )}
                                                </td>
                                                <td className="py-2 px-4 text-xs font-medium text-surface-500 truncate max-w-[10rem]">
                                                    {field.name}
                                                </td>
                                                <td className="py-2 px-4">
-                                                   <input
+                                                   {readOnly ? (
+                                                       <span className="text-xs font-mono text-slate-300 px-2.5 py-1.5 block">{field.value || '—'}</span>
+                                                   ) : (
+                                                       <input
                                                           type="text"
                                                           value={field.value}
                                                           onChange={(e) => handleFieldChange(idx, 'value', e.target.value)}
                                                           className="w-full bg-white/[0.03] border border-white/5 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500/50 transition-colors"
                                                           placeholder="Value"
                                                        />
+                                                   )}
                                                </td>
                                                <td className="py-2 px-4">
                                                    <span className="text-[9px] font-semibold px-2 py-1 rounded bg-white/[0.05] text-surface-600 uppercase tracking-wider block text-center">
                                                        {field.type}
                                                    </span>
                                                </td>
-                                               <td className="py-2 px-4 text-center">
-                                                   <button
+                                               {!readOnly && (
+                                                   <td className="py-2 px-4 text-center">
+                                                       <button
                                                           onClick={() => handleDeleteField(idx)}
                                                           className="p-1 rounded-lg text-surface-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
                                                           title="Delete Row"
                                                        >
-                                                       <Trash2 size={13} />
-                                                   </button>
-                                               </td>
+                                                           <Trash2 size={13} />
+                                                       </button>
+                                                   </td>
+                                               )}
                                            </tr>
                                        ))
                                    )}
@@ -366,26 +408,34 @@ export const FixMessageEditorModal: React.FC<FixMessageEditorModalProps> = ({
 
                {/* Footer */}
               <div className="p-5 border-t border-white/5 bg-white/[0.02] flex justify-end gap-2.5 shrink-0">
-                  <button onClick={onClose} className="btn-secondary px-5 py-2.5 rounded-xl text-xs font-semibold">
-                      Cancel
-                   </button>
-                  <button
-                        onClick={handleSubmit}
-                       disabled={submitting || fields.length === 0}
-                       className={cn(
-                             'px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold shadow-lg transition-all',
-                            submitting ? 'bg-blue-600/50 cursor-wait' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/10 hover:shadow-blue-500/20'
-                         )}
-                   >
-                       {submitting ? (
-                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : onSave ? (
-                            <Save size={14} />
-                        ) : (
-                            <Send size={14} />
-                        )}
-                      <span>{onSave ? 'Save to Testcase' : 'Send Message'}</span>
-                   </button>
+                  {readOnly ? (
+                      <button onClick={onClose} className="btn-secondary px-5 py-2.5 rounded-xl text-xs font-semibold">
+                          Close
+                      </button>
+                  ) : (
+                      <>
+                          <button onClick={onClose} className="btn-secondary px-5 py-2.5 rounded-xl text-xs font-semibold">
+                              Cancel
+                          </button>
+                          <button
+                              onClick={handleSubmit}
+                              disabled={submitting || fields.length === 0}
+                              className={cn(
+                                  'px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold shadow-lg transition-all',
+                                  submitting ? 'bg-blue-600/50 cursor-wait' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/10 hover:shadow-blue-500/20'
+                              )}
+                          >
+                              {submitting ? (
+                                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : onSave ? (
+                                  <Save size={14} />
+                              ) : (
+                                  <Send size={14} />
+                              )}
+                              <span>{onSave ? 'Save to Testcase' : 'Send Message'}</span>
+                          </button>
+                      </>
+                  )}
                </div>
            </div>
        </div>

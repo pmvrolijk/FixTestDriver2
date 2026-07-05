@@ -363,6 +363,15 @@ const getLineStyle = (line: string) => {
     return 'text-slate-400';
 };
 
+const highlightMacros = (line: string) => {
+    const parts = line.split(/(<[^>]+>)/g);
+    return parts.map((part, i) =>
+        /^<[^>]+>$/.test(part)
+            ? <span key={i} className="text-amber-400 font-semibold">{part}</span>
+            : part
+    );
+};
+
 // ─── Sortable step row ────────────────────────────────────────────────────────
 
 interface SortableStepRowProps {
@@ -406,7 +415,7 @@ function SortableStepRow({ id, line, index, depth, onEditFix, onEditCmd, onDelet
                 getLineStyle(line),
                 isBlank && 'opacity-0 select-none'
             )}>
-                {isBlank ? '.' : line}
+                {isBlank ? '.' : highlightMacros(line)}
             </span>
             <div className="hidden group-hover:flex items-center gap-0.5 shrink-0">
                 {isFixMsg && (
@@ -702,7 +711,7 @@ export const TestRunner: React.FC = () => {
     const fileCount = countFiles(fileTree);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100vh-9rem)]">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
 
             {/* Column 1 – File Explorer */}
             <div className="lg:col-span-1 bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col shadow-lg">
@@ -737,7 +746,7 @@ export const TestRunner: React.FC = () => {
             <div className="lg:col-span-4 flex flex-col h-full overflow-hidden gap-4">
                 {selectedTest ? (
                     <>
-                    <div className="flex-1 bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col shadow-lg min-h-0">
+                    <div className="flex-[2] bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col shadow-lg min-h-0">
                         {/* Editor header */}
                         <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
                             <div className="truncate pr-4">
@@ -897,7 +906,7 @@ export const TestRunner: React.FC = () => {
                     </div>
 
                     {/* Run History (collapsed strip) */}
-                    <div className="h-64 bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col shadow-lg shrink-0 animate-slide-up">
+                    <div className="flex-1 bg-surface-950 border border-white/5 rounded-2xl overflow-hidden flex flex-col shadow-lg min-h-0 animate-slide-up">
                         <div className="p-3.5 border-b border-white/5 bg-white/[0.02] flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <History size={14} className="text-purple-400" />

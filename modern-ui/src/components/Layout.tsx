@@ -21,9 +21,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
     const [helpOpen, setHelpOpen] = useState(false);
 
     return (
-        <div className="min-h-screen w-full bg-[#0f111a] text-slate-50 flex flex-col">
+        <div className="fixed inset-0 bg-[#0f111a] text-slate-50 flex flex-col">
             {/* Header */}
-          <header className="border-b border-white/5 bg-[#0f111a]/80 backdrop-blur-xl sticky top-0 z-20">
+          <header className="border-b border-white/5 bg-[#0f111a]/80 backdrop-blur-xl z-20 shrink-0">
                 <div className="w-full px-6 h-14 flex items-center justify-between">
                     {/* Logo & Brand */}
                    <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
             <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
 
             {/* Main Content Area */}
-          <main className="flex-1 w-full p-6 overflow-hidden">
+          <main className="flex-1 w-full p-6 overflow-y-auto">
                 <div className="h-full animate-fade-in">
                     {children}
                 </div>

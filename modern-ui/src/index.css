@@ -21,6 +21,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  zoom: 1.2;
+  overflow: hidden;
+  height: 100%;
+}
+
 /* Base resets */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -30,12 +36,13 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
 }
 
 /* Scrollbar styling for dark theme */
