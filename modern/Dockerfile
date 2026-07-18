@@ -26,8 +26,9 @@ EXPOSE 8080
 EXPOSE 9878 9880 9888
 
 # Environment Variable Defaults
+ENV CONFIG_ROOT=/app/config
 ENV FIX_CONFIG_PATH=/app/config/FixEngine.cfg
-ENV TESTCASES_ROOT=/app/data/testcases
+ENV TESTCASES_ROOT=/app/config/testcases
 ENV PRODUCTS_DEF_PATH=/app/config/products.def
 ENV QUICKFIX_DICT_PATH=/app/config/quickfix
 
