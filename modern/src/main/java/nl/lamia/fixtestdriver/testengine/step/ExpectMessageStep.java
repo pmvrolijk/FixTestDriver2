@@ -9,7 +9,6 @@ import quickfix.FieldNotFound;
 import quickfix.Message;
 import quickfix.SessionID;
 
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -43,19 +42,21 @@ public class ExpectMessageStep implements TestStep {
         try {
             log.info("Waiting up to {}ms for expected message on session {}", timeoutMs, session);
             Message received = future.get(timeoutMs, TimeUnit.MILLISECONDS);
-            
-            // Validate the received message against expectations
-            boolean matches = transformationService.compare(
-                    received, 
+
+            // Validate the received message against expectations, excluding engine-managed dynamic tags.
+            MessageTransformationService.MessageDiff result = transformationService.diff(
+                    received,
                     expectedMessage.substring(1), // Remove 'E' prefix
-                    Collections.emptyList(), 
+                    MessageTransformationService.DYNAMIC_TAGS,
                     true // ignoreUnexpected
             );
-            
-            if (!matches) {
+
+            // Always log the inline diff (pass or fail) so the difference is visible.
+            context.log(result.formatted());
+
+            if (!result.matches()) {
                 throw new RuntimeException("Received message does not match expectations.");
             }
-            context.log("Received expected message: " + received.toString().replace('\001', '|'));
 
         } catch (TimeoutException e) {
             throw new RuntimeException("Timeout waiting for message after " + timeoutMs + "ms");

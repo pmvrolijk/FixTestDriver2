@@ -372,6 +372,34 @@ const highlightMacros = (line: string) => {
     );
 };
 
+// Colorizes the inline expect-diff sentinels emitted by the backend:
+//   «…» mismatch (rose), ⟪…⟫ missing/unexpected (amber), ⟨…⟩ ignored/dynamic (muted).
+const highlightDiff = (line: string) => {
+    const parts = line.split(/(«[^»]*»|⟪[^⟫]*⟫|⟨[^⟩]*⟩)/g);
+    return parts.map((part, i) => {
+        if (/^«.*»$/.test(part)) return <span key={i} className="text-rose-400 font-semibold">{part.slice(1, -1)}</span>;
+        if (/^⟪.*⟫$/.test(part)) return <span key={i} className="text-amber-400 font-semibold">{part.slice(1, -1)}</span>;
+        if (/^⟨.*⟩$/.test(part)) return <span key={i} className="text-surface-600">{part.slice(1, -1)}</span>;
+        return part;
+    });
+};
+
+const LogOutput = ({ text, errorMessage }: { text?: string; errorMessage?: string }) => (
+    <div className="p-3 bg-white/[0.02] border-t border-white/[0.05] font-mono text-[10px] whitespace-pre-wrap text-surface-500 max-h-48 overflow-y-auto">
+        {(text ?? '').split('\n').map((line, i) => {
+            let lineClass = '';
+            if (line.includes('Expect PASS')) lineClass = 'text-emerald-400 font-semibold';
+            else if (line.includes('Expect FAIL')) lineClass = 'text-rose-400 font-semibold';
+            return <div key={i} className={lineClass}>{highlightDiff(line)}</div>;
+        })}
+        {errorMessage && (
+            <div className="mt-2 p-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg">
+                Error: {errorMessage}
+            </div>
+        )}
+    </div>
+);
+
 // ─── Sortable step row ────────────────────────────────────────────────────────
 
 interface SortableStepRowProps {
@@ -939,14 +967,7 @@ export const TestRunner: React.FC = () => {
                                                 </div>
                                                 <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
                                             </summary>
-                                            <div className="p-3 bg-white/[0.02] border-t border-white/[0.05] font-mono text-[10px] whitespace-pre-wrap text-surface-500 max-h-48 overflow-y-auto">
-                                                {result.logOutput}
-                                                {result.errorMessage && (
-                                                    <div className="mt-2 p-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg">
-                                                        Error: {result.errorMessage}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <LogOutput text={result.logOutput} errorMessage={result.errorMessage} />
                                         </details>
                                     ))}
                                 </div>
@@ -987,14 +1008,7 @@ export const TestRunner: React.FC = () => {
                                                 </div>
                                                 <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
                                             </summary>
-                                            <div className="p-3 bg-white/[0.02] border-t border-white/[0.05] font-mono text-[10px] whitespace-pre-wrap text-surface-500 max-h-48 overflow-y-auto">
-                                                {result.logOutput}
-                                                {result.errorMessage && (
-                                                    <div className="mt-2 p-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg">
-                                                        Error: {result.errorMessage}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <LogOutput text={result.logOutput} errorMessage={result.errorMessage} />
                                         </details>
                                     ))}
                                 </div>

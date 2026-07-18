@@ -43,6 +43,19 @@ public class MessageTransformationService {
     private static final Pattern RND_PATTERN = Pattern.compile("<RND=\\[([A-Za-z0-9\\-]+)\\],(\\d+)>");
     private static final Pattern RND_CHARSET_RANGE = Pattern.compile("([A-Za-z0-9])-([A-Za-z0-9])");
 
+    /** Engine-managed header/trailer tags that vary per run and are excluded from expect comparison. */
+    public static final Set<String> DYNAMIC_TAGS = Set.of(
+            "8",   // BeginString
+            "9",   // BodyLength
+            "10",  // CheckSum
+            "34",  // MsgSeqNum
+            "43",  // PossDupFlag
+            "52",  // SendingTime
+            "97",  // PossResend
+            "122", // OrigSendingTime
+            "369"  // LastMsgSeqNumProcessed
+    );
+
     private final Map<String, DataDictionary> dataDictionaries = new HashMap<>();
 
     @PostConstruct
@@ -291,7 +304,7 @@ public class MessageTransformationService {
      * Parses a pipe-separated FIX string into a Map of tag to value.
      */
     public Map<String, String> parse(String message) {
-        Map<String, String> fields = new HashMap<>();
+        Map<String, String> fields = new LinkedHashMap<>();
         Matcher matcher = FIELD_PATTERN.matcher(message);
         while (matcher.find()) {
             fields.put(matcher.group(1), matcher.group(2));
@@ -299,41 +312,115 @@ public class MessageTransformationService {
         return fields;
     }
 
+    /** Outcome of comparing a single tag between the expected and actual messages. */
+    public enum DiffStatus { MATCH, MISMATCH, MISSING, UNEXPECTED, IGNORED }
+
+    /** Per-tag comparison result. Either side may be {@code null} when the tag is present on only one message. */
+    public record FieldDiff(String tag, String expected, String actual, DiffStatus status) {}
+
+    /** Full comparison result: whether it passed plus the formatted two-line inline diff. */
+    public record MessageDiff(boolean matches, List<FieldDiff> fields, String formatted) {}
+
+    // Highlight sentinels — code points that never occur in FIX data, so the UI can colorize safely.
+    private static final String MISMATCH_OPEN = "«", MISMATCH_CLOSE = "»";   // « »  -> rose
+    private static final String MISSING_OPEN = "⟪", MISSING_CLOSE = "⟫";     // ⟪ ⟫  -> amber
+    private static final String IGNORED_OPEN = "⟨", IGNORED_CLOSE = "⟩";     // ⟨ ⟩  -> muted
+
     /**
      * Compares an actual QuickFIX/J message against an expected pipe-separated string.
+     * Thin backward-compatible wrapper over {@link #diff}.
      */
     public boolean compare(Message actualMsg, String expectedStr, List<String> skipTags, boolean ignoreUnexpected) {
+        return diff(actualMsg, expectedStr, new HashSet<>(skipTags), ignoreUnexpected).matches();
+    }
+
+    /**
+     * Compares an actual message against an expected pipe-separated string, producing a structured,
+     * highlightable inline diff. Iterates the union of expected and actual tags (expected order first)
+     * so missing expected tags are detected, and never early-returns. Tags in {@code skipTags} are
+     * reported as {@link DiffStatus#IGNORED} and never fail the comparison.
+     */
+    public MessageDiff diff(Message actualMsg, String expectedStr, Set<String> skipTags, boolean ignoreUnexpected) {
         String actualStr = actualMsg.toString().replace('\001', '|');
         Map<String, String> actualFields = parse(actualStr);
         Map<String, String> expectedFields = parse(expectedStr);
 
-        // MsgType check
-        if (!Objects.equals(actualFields.get("35"), expectedFields.get("35"))) {
-            log.warn("MsgType mismatch: expected {}, got {}", expectedFields.get("35"), actualFields.get("35"));
-            return false;
-        }
+        // Union of tags: expected order first, then any actual-only tags in their message order.
+        LinkedHashSet<String> tags = new LinkedHashSet<>(expectedFields.keySet());
+        tags.addAll(actualFields.keySet());
 
-        for (Map.Entry<String, String> entry : actualFields.entrySet()) {
-            String tag = entry.getKey();
-            String actualValue = entry.getValue();
-
-            if (skipTags.contains(tag)) continue;
-
-            if (!expectedFields.containsKey(tag)) {
-                if (!ignoreUnexpected) {
-                    log.warn("Unexpected tag {} with value {}", tag, actualValue);
-                    return false;
-                }
-                continue;
-            }
-
+        List<FieldDiff> fields = new ArrayList<>();
+        boolean matches = true;
+        for (String tag : tags) {
+            boolean hasExpected = expectedFields.containsKey(tag);
+            boolean hasActual = actualFields.containsKey(tag);
             String expectedValue = expectedFields.get(tag);
-            if (!compareValues(expectedValue, actualValue)) {
-                log.warn("Value mismatch for tag {}: expected {}, got {}", tag, expectedValue, actualValue);
-                return false;
+            String actualValue = actualFields.get(tag);
+
+            DiffStatus status;
+            if (skipTags.contains(tag)) {
+                status = DiffStatus.IGNORED;
+            } else if (hasExpected && hasActual) {
+                status = compareValues(expectedValue, actualValue) ? DiffStatus.MATCH : DiffStatus.MISMATCH;
+            } else if (hasExpected) {
+                status = DiffStatus.MISSING;
+            } else {
+                status = DiffStatus.UNEXPECTED;
+            }
+
+            boolean fails = status == DiffStatus.MISMATCH
+                    || status == DiffStatus.MISSING
+                    || (status == DiffStatus.UNEXPECTED && !ignoreUnexpected);
+            if (fails) matches = false;
+
+            fields.add(new FieldDiff(tag, expectedValue, actualValue, status));
+        }
+
+        String beginString = actualFields.getOrDefault("8", "FIX.4.2");
+        String formatted = formatDiff(fields, matches, actualFields.get("35"), beginString);
+        return new MessageDiff(matches, fields, formatted);
+    }
+
+    /** Renders the field diffs as a header line plus two aligned Expected/Received lines with highlight sentinels. */
+    private String formatDiff(List<FieldDiff> fields, boolean matches, String msgType, String beginString) {
+        String msgTypeLabel = msgType != null
+                ? msgType + " (" + getFieldName(beginString, 35) + ")"
+                : "?";
+        StringBuilder expected = new StringBuilder();
+        StringBuilder received = new StringBuilder();
+        for (FieldDiff f : fields) {
+            switch (f.status()) {
+                case MATCH -> {
+                    appendToken(expected, f.tag() + "=" + f.expected(), null, null);
+                    appendToken(received, f.tag() + "=" + f.actual(), null, null);
+                }
+                case MISMATCH -> {
+                    appendToken(expected, f.tag() + "=" + f.expected(), MISMATCH_OPEN, MISMATCH_CLOSE);
+                    appendToken(received, f.tag() + "=" + f.actual(), MISMATCH_OPEN, MISMATCH_CLOSE);
+                }
+                case MISSING -> {
+                    appendToken(expected, f.tag() + "=" + f.expected(), MISSING_OPEN, MISSING_CLOSE);
+                    appendToken(received, f.tag() + "=—", MISSING_OPEN, MISSING_CLOSE); // — placeholder
+                }
+                case UNEXPECTED -> {
+                    appendToken(expected, f.tag() + "=—", MISSING_OPEN, MISSING_CLOSE);
+                    appendToken(received, f.tag() + "=" + f.actual(), MISSING_OPEN, MISSING_CLOSE);
+                }
+                case IGNORED -> {
+                    if (f.expected() != null) appendToken(expected, f.tag() + "=" + f.expected(), IGNORED_OPEN, IGNORED_CLOSE);
+                    if (f.actual() != null) appendToken(received, f.tag() + "=" + f.actual(), IGNORED_OPEN, IGNORED_CLOSE);
+                }
             }
         }
-        return true;
+        return "Expect " + (matches ? "PASS" : "FAIL") + " — 35=" + msgTypeLabel + "\n"
+                + "  Expected  " + expected + "\n"
+                + "  Received  " + received;
+    }
+
+    private void appendToken(StringBuilder sb, String token, String open, String close) {
+        if (sb.length() > 0) sb.append('|');
+        if (open != null) sb.append(open).append(token).append(close);
+        else sb.append(token);
     }
 
     private boolean compareValues(String expected, String actual) {

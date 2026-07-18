@@ -6,3 +6,4 @@
 /modern/data/FixEngine/**
 /modern/data/*.db
 /modern/logs/**
+.idea
