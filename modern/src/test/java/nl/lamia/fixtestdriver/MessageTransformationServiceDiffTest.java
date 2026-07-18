@@ -132,6 +132,26 @@ class MessageTransformationServiceDiffTest {
                 .hasMessageContaining("ordId");
     }
 
+    // --- Parsing of non-pipe-terminated lines (.def send lines) -----------------------------
+
+    @Test
+    void parseKeepsLastFieldWithoutTrailingPipe() {
+        // .def send lines are not pipe-terminated; the final field must still be parsed.
+        Map<String, String> fields = service.parse("8=FIX.4.2|35=D|55=AAPL|59=1");
+
+        assertThat(fields).containsEntry("59", "1");
+    }
+
+    @Test
+    void transformSendsFieldAfterMacroAtEndOfLine() throws Exception {
+        // Regression: the tag immediately after a macro at the end of a (non-pipe-terminated)
+        // line was dropped, so 59=1 never made it into the outgoing message.
+        Message result = service.transform(
+                "8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|38=100|40=1|54=1|55=<RND=[A-Z],4>|60=<Date>|59=1");
+
+        assertThat(result.toString().replace('\001', '|')).contains("59=1|");
+    }
+
     @Test
     void captureThenSubstituteRoundTrip() throws Exception {
         // 1. Receive an Execution Report and capture its OrderID.

@@ -36,7 +36,9 @@ public class MessageTransformationService {
     private static final Pattern PRODUCT_PATTERN = Pattern.compile("<Product=([^,|]*),([^|]*)>");
     private static final Pattern CLORDID_PATTERN = Pattern.compile("<Clordid=([^|]*)>");
     private static final Pattern ORIGCLORDID_PATTERN = Pattern.compile("<OrigClordid=([^|]*)>");
-    private static final Pattern FIELD_PATTERN = Pattern.compile("(\\d+)=([^\\|]+)\\|");
+    // A field is terminated by a pipe or the end of the line, so the final field of a
+    // non-pipe-terminated .def send line is still captured.
+    private static final Pattern FIELD_PATTERN = Pattern.compile("(\\d+)=([^\\|]+)(?:\\||$)");
     private static final Pattern REGEX_EXPECT_PATTERN = Pattern.compile("<([^>]*)>");
     private static final Pattern CAPTURE_PATTERN = Pattern.compile("<([^>]*)>->([A-Za-z_][A-Za-z0-9_]*)");
     private static final Pattern VAR_PATTERN = Pattern.compile("<Var=([A-Za-z_][A-Za-z0-9_]*)>");

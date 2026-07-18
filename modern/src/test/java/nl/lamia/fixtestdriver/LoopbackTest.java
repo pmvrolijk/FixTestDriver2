@@ -51,7 +51,9 @@ public class LoopbackTest {
         // 4. Verify results
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getLogOutput()).contains("Sent message");
-        assertThat(result.getLogOutput()).contains("Received expected message");
+        // The expect step logs an inline diff prefixed with "Expect PASS" when the received
+        // message matches expectations (or "Expect FAIL" on mismatch).
+        assertThat(result.getLogOutput()).contains("Expect PASS");
 
         // 5. Cleanup
         fixEngineService.stop();
