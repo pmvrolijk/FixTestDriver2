@@ -38,6 +38,8 @@ public class MessageTransformationService {
     private static final Pattern ORIGCLORDID_PATTERN = Pattern.compile("<OrigClordid=([^|]*)>");
     private static final Pattern FIELD_PATTERN = Pattern.compile("(\\d+)=([^\\|]+)\\|");
     private static final Pattern REGEX_EXPECT_PATTERN = Pattern.compile("<([^>]*)>");
+    private static final Pattern CAPTURE_PATTERN = Pattern.compile("<([^>]*)>->([A-Za-z_][A-Za-z0-9_]*)");
+    private static final Pattern VAR_PATTERN = Pattern.compile("<Var=([A-Za-z_][A-Za-z0-9_]*)>");
     private static final Pattern ONEOF_PATTERN = Pattern.compile("<ONEOF=\\[([^\\]]+)\\]>");
     private static final Pattern RANGE_PATTERN = Pattern.compile("<RANGE=\\[(\\d+\\.?\\d*)-(\\d+\\.?\\d*)\\]>");
     private static final Pattern RND_PATTERN = Pattern.compile("<RND=\\[([A-Za-z0-9\\-]+)\\],(\\d+)>");
@@ -98,7 +100,17 @@ public class MessageTransformationService {
      * performing all macro substitutions.
      */
     public Message transform(String messageStr) throws Exception {
-        String message = messageStr;
+        return transform(messageStr, Collections.emptyMap());
+    }
+
+    /**
+     * Transforms a raw pipe-separated FIX message string into a QuickFIX/J Message object,
+     * performing all macro substitutions. Run-local variables captured by earlier expect
+     * steps are resolved first via the {@code <Var=NAME>} syntax.
+     */
+    public Message transform(String messageStr, Map<String, String> variables) throws Exception {
+        // 0. Substitute run-local variables captured from earlier expect steps
+        String message = substituteVariables(messageStr, variables);
 
         // 1. Substitute Client Order ID
         Matcher clordidMatcher = CLORDID_PATTERN.matcher(message);
@@ -205,6 +217,45 @@ public class MessageTransformationService {
         }
         matcher.appendTail(sb);
         return sb.toString();
+    }
+
+    /**
+     * Substitutes run-local variables ({@code <Var=NAME>}) with values captured by an earlier
+     * expect step. References to a variable that was never captured fail the step.
+     */
+    private String substituteVariables(String message, Map<String, String> variables) {
+        Matcher matcher = VAR_PATTERN.matcher(message);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            if (variables == null || !variables.containsKey(name)) {
+                throw new IllegalStateException("Undefined test variable: " + name);
+            }
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(variables.get(name)));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    /**
+     * Extracts run-local variables from an expect line. For every {@code TAG=<REGEXP>->VAR}
+     * field, the entire actual value received for that tag is captured under {@code VAR}
+     * (direct string, no regex capture-group extraction).
+     */
+    public Map<String, String> captureVariables(Message actualMsg, String expectedStr) {
+        Map<String, String> captured = new LinkedHashMap<>();
+        Map<String, String> actualFields = parse(actualMsg.toString().replace('\001', '|'));
+        Map<String, String> expectedFields = parse(expectedStr);
+        expectedFields.forEach((tag, expectedVal) -> {
+            Matcher m = CAPTURE_PATTERN.matcher(expectedVal);
+            if (m.find()) {
+                String actual = actualFields.get(tag);
+                if (actual != null) {
+                    captured.put(m.group(2), actual);
+                }
+            }
+        });
+        return captured;
     }
 
     private String substituteOneOf(String message) {

@@ -54,6 +54,10 @@ public class ExpectMessageStep implements TestStep {
             // Always log the inline diff (pass or fail) so the difference is visible.
             context.log(result.formatted());
 
+            // Capture any TAG=<REGEXP>->VAR variables from the received message for later send steps.
+            transformationService.captureVariables(received, expectedMessage.substring(1))
+                    .forEach(context::setVariable);
+
             if (!result.matches()) {
                 throw new RuntimeException("Received message does not match expectations.");
             }

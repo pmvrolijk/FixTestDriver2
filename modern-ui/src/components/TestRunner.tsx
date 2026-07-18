@@ -364,9 +364,10 @@ const getLineStyle = (line: string) => {
 };
 
 const highlightMacros = (line: string) => {
-    const parts = line.split(/(<[^>]+>)/g);
+    // Match a <…> macro plus an optional ->VAR capture suffix (E lines), so the whole token is amber.
+    const parts = line.split(/(<[^>]+>(?:->[A-Za-z_][A-Za-z0-9_]*)?)/g);
     return parts.map((part, i) =>
-        /^<[^>]+>$/.test(part)
+        /^<[^>]+>(?:->[A-Za-z_][A-Za-z0-9_]*)?$/.test(part)
             ? <span key={i} className="text-amber-400 font-semibold">{part}</span>
             : part
     );

@@ -37,6 +37,8 @@ const MACROS = [
     { macro: '<RANGE=[min-max]>', example: '44=<RANGE=[99.50-100.50]>', description: 'Random decimal in the inclusive range. Precision matches the highest number of decimal places in min/max.' },
     { macro: '<RND=[charset],len>', example: '17=<RND=[A-Z0-9],12>', description: 'Random string of the given length using the specified characters. Supports ranges (A-Z, 0-9, a-z) and individual characters.' },
     { macro: '<REGEX> (E lines)', example: '11=<Ord1-[0-9]*>', description: 'In Expect lines, any value inside <…> is matched as a Java regex against the actual field value.' },
+    { macro: '<REGEX>->VAR (E lines)', example: '37=<.*>->ordId', description: 'In Expect lines, match the field as a regex and capture the entire received value into run-local variable VAR for reuse in a later I line.' },
+    { macro: '<Var=VAR> (I lines)', example: '41=<Var=ordId>', description: 'Substitute a value previously captured with ->VAR in an Expect line. Only lives for the current test run; fails if the variable was never captured.' },
 ];
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {

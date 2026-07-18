@@ -7,6 +7,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import quickfix.Message;
 
 import java.net.URL;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -96,5 +97,52 @@ class MessageTransformationServiceDiffTest {
         assertThat(result.formatted())
                 .contains("Expected")
                 .contains("Received");
+    }
+
+    // --- Run-local variable capture & substitution -------------------------------------------
+
+    @Test
+    void captureVariablesStoresActualValueForRegexCaptureField() throws Exception {
+        // Broker-assigned OrderID (37) is unknown up-front, matched by regex and captured into ordId.
+        Message received = msg("8=FIX.4.2|35=8|49=SRV|56=CLT|37=BRK-77291|11=CLT-1|39=0|");
+        String expected = "8=FIX.4.2|35=8|49=SRV|56=CLT|37=<.*>->ordId|11=CLT-1|39=0|";
+
+        Map<String, String> captured = service.captureVariables(received, expected);
+
+        assertThat(captured).containsEntry("ordId", "BRK-77291");
+        // Plain fields (no ->VAR) are not captured.
+        assertThat(captured).containsOnlyKeys("ordId");
+    }
+
+    @Test
+    void transformSubstitutesCapturedVariable() throws Exception {
+        Map<String, String> vars = Map.of("ordId", "BRK-77291");
+        // 37=<Var=ordId> should be replaced by the stored value before the message is built.
+        Message result = service.transform(
+                "8=FIX.4.2|35=F|49=CLT|56=SRV|37=<Var=ordId>|41=CLT-1|", vars);
+
+        assertThat(result.toString().replace('\001', '|')).contains("37=BRK-77291|");
+    }
+
+    @Test
+    void transformThrowsWhenVariableUnset() {
+        assertThatThrownBy(() ->
+                service.transform("8=FIX.4.2|35=F|49=CLT|56=SRV|37=<Var=ordId>|", Map.of()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("ordId");
+    }
+
+    @Test
+    void captureThenSubstituteRoundTrip() throws Exception {
+        // 1. Receive an Execution Report and capture its OrderID.
+        Message received = msg("8=FIX.4.2|35=8|49=SRV|56=CLT|37=BRK-99001|11=CLT-1|39=0|");
+        String expected = "8=FIX.4.2|35=8|49=SRV|56=CLT|37=<.*>->ordId|11=CLT-1|39=0|";
+        Map<String, String> captured = service.captureVariables(received, expected);
+
+        // 2. Reuse the captured value in a later cancel-request send.
+        Message sent = service.transform(
+                "8=FIX.4.2|35=F|49=CLT|56=SRV|37=<Var=ordId>|41=CLT-1|", captured);
+
+        assertThat(sent.toString().replace('\001', '|')).contains("37=BRK-99001|");
     }
 }
