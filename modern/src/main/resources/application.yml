@@ -29,13 +29,13 @@ management:
 
 application:
   fix:
-    config-path: ${FIX_CONFIG_PATH:./config/FixEngine.cfg}
+    config-path: ${FIX_CONFIG_PATH:src/main/resources/config/FixEngine.cfg}
   testcases:
-    root: ${TESTCASES_ROOT:./testcases}
+    root: ${TESTCASES_ROOT:src/main/resources/config/testcases}
   dictionary:
-    filename: ${PRODUCTS_DEF_PATH:./config/products.def}
+    filename: ${PRODUCTS_DEF_PATH:src/main/resources/config/products.def}
   quickfix:
-    dictionary-path: ${QUICKFIX_DICT_PATH:./config/quickfix}
+    dictionary-path: ${QUICKFIX_DICT_PATH:src/main/resources/config/quickfix}
 
 logging:
   level:

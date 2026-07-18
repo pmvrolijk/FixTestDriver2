@@ -18,9 +18,9 @@ import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-    "application.fix.config-path=config/loopback.cfg",
-    "application.testcases.root=testcases",
-    "application.quickfix.dictionary-path=config/quickfix"
+    "application.fix.config-path=src/test/resources/config/loopback.cfg",
+    "application.testcases.root=src/test/resources/config/testcases",
+    "application.quickfix.dictionary-path=src/test/resources/config/quickfix"
 })
 public class LoopbackTest {
 
@@ -45,7 +45,7 @@ public class LoopbackTest {
         );
 
         // 3. Run the loopback test script
-        File testFile = new File("testcases/loopback.def");
+        File testFile = new File("src/test/resources/config/testcases/loopback.def");
         TestResultEntity result = testRunnerService.runTest(testFile);
 
         // 4. Verify results
