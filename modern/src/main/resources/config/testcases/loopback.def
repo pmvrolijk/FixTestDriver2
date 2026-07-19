@@ -2,11 +2,11 @@
 # 1. Connect as Initiator
 iCONNECT FIX.4.2:LB_INIT->LB_ACC
 # 2. Send New Order Single
-I8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<Clordid=LB1>|21=1|38=100|40=1|54=1|55=<RND=[A-Z],4>|60=<Date>|59=1
+I8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<Clordid=LB1>|21=1|38=100|40=1|54=1|55=<Rnd=[A-Z],4>|60=<Date>|59=1
 # 3. Switch to Acceptor context to verify reception
 iCONNECT FIX.4.2:LB_ACC->LB_INIT
 # 4. Expect the same message to have arrived
 E8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|11=<LB1-.*>->clientId|55=<.*>->symbol|21=1|38=100|40=1|54=1|59=1
 # 5. Send back an execution report
-I8=FIX.4.2|9=128|35=8|34=404|49=LB_ACC|52=20100925-16:26:50.275|56=LB_INIT|6=0|11=<Var=clientId>|14=0|17=<RND=[A-Z0-9],12>|20=0|37=156|39=0|54=1|55=<Var=symbol>|150=2|151=0|10=063
+I8=FIX.4.2|9=128|35=8|34=404|49=LB_ACC|52=20100925-16:26:50.275|56=LB_INIT|6=0|11=<Var=clientId>|14=0|17=<Rnd=[A-Z0-9],12>|20=0|37=156|39=0|54=1|55=<Var=symbol>|150=2|151=0|10=063
 WAIT 1000

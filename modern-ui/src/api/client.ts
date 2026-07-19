@@ -15,9 +15,7 @@ export const apiClient = axios.create({
 export const createWebSocketClient = (onMessage: (msg: any) => void, onStatus: (status: any) => void) => {
     const client = new Client({
         webSocketFactory: () => new SockJS(WS_URL),
-        debug: (str) => {
-            console.log(str);
-        },
+        debug: import.meta.env.DEV ? (str) => console.log(str) : () => {},
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,

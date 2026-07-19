@@ -9,6 +9,9 @@ export interface SessionStatus {
 }
 
 export interface FixMessageEvent {
+    // Client-assigned monotonic id, stamped on receipt. Used as a stable React key
+    // so the log list reconciles cheaply even though messages are prepended.
+    _id?: number;
     sessionId: string;
     direction: 'INCOMING' | 'OUTGOING' | 'INCOMING_ADMIN' | 'OUTGOING_ADMIN';
     rawMessage: string;

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useMemo, useState, useRef} from 'react';
 import {apiClient} from '../api/client';
 import {FixMessageEvent, SessionStatus} from '../types';
 import {cn} from '../lib/utils';
@@ -100,9 +100,10 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({sessions, set
           }
       };
 
-     const filteredMessages = selectedSessionId
-         ? messages.filter(m => m.sessionId === selectedSessionId)
-          : [];
+     const filteredMessages = useMemo(
+         () => selectedSessionId ? messages.filter(m => m.sessionId === selectedSessionId) : [],
+         [messages, selectedSessionId]
+     );
 
      // Format timestamp consistently
     const formatTime = (ts: number) =>

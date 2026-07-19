@@ -42,9 +42,9 @@ public class MessageTransformationService {
     private static final Pattern REGEX_EXPECT_PATTERN = Pattern.compile("<([^>]*)>");
     private static final Pattern CAPTURE_PATTERN = Pattern.compile("<([^>]*)>->([A-Za-z_][A-Za-z0-9_]*)");
     private static final Pattern VAR_PATTERN = Pattern.compile("<Var=([A-Za-z_][A-Za-z0-9_]*)>");
-    private static final Pattern ONEOF_PATTERN = Pattern.compile("<ONEOF=\\[([^\\]]+)\\]>");
-    private static final Pattern RANGE_PATTERN = Pattern.compile("<RANGE=\\[(\\d+\\.?\\d*)-(\\d+\\.?\\d*)\\]>");
-    private static final Pattern RND_PATTERN = Pattern.compile("<RND=\\[([A-Za-z0-9\\-]+)\\],(\\d+)>");
+    private static final Pattern ONEOF_PATTERN = Pattern.compile("<Oneof=\\[([^\\]]+)\\]>");
+    private static final Pattern RANGE_PATTERN = Pattern.compile("<Range=\\[(\\d+\\.?\\d*)-(\\d+\\.?\\d*)\\]>");
+    private static final Pattern RND_PATTERN = Pattern.compile("<Rnd=\\[([A-Za-z0-9\\-]+)\\],(\\d+)>");
     private static final Pattern RND_CHARSET_RANGE = Pattern.compile("([A-Za-z0-9])-([A-Za-z0-9])");
 
     /** Engine-managed header/trailer tags that vary per run and are excluded from expect comparison. */

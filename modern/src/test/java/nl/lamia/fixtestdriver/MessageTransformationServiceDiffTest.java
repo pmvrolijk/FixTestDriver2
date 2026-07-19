@@ -17,7 +17,7 @@ class MessageTransformationServiceDiffTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        URL resourceDir = getClass().getClassLoader().getResource("quickfix");
+        URL resourceDir = getClass().getClassLoader().getResource("config/quickfix");
         assertThat(resourceDir).isNotNull();
 
         service = new MessageTransformationService(null, null);
@@ -147,7 +147,7 @@ class MessageTransformationServiceDiffTest {
         // Regression: the tag immediately after a macro at the end of a (non-pipe-terminated)
         // line was dropped, so 59=1 never made it into the outgoing message.
         Message result = service.transform(
-                "8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|38=100|40=1|54=1|55=<RND=[A-Z],4>|60=<Date>|59=1");
+                "8=FIX.4.2|35=D|49=LB_INIT|56=LB_ACC|38=100|40=1|54=1|55=<Rnd=[A-Z],4>|60=<Date>|59=1");
 
         assertThat(result.toString().replace('\001', '|')).contains("59=1|");
     }
