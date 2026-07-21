@@ -3,7 +3,9 @@ package nl.lamia.fixtestdriver.controller;
 import lombok.RequiredArgsConstructor;
 import nl.lamia.fixtestdriver.domain.TestResultEntity;
 import nl.lamia.fixtestdriver.dto.FileTreeNode;
+import nl.lamia.fixtestdriver.dto.LatencyTraceDto;
 import nl.lamia.fixtestdriver.repository.TestResultRepository;
+import nl.lamia.fixtestdriver.service.LatencyTraceService;
 import nl.lamia.fixtestdriver.testengine.TestRunnerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,7 @@ public class TestController {
 
     private final TestRunnerService testRunnerService;
     private final TestResultRepository testResultRepository;
+    private final LatencyTraceService latencyTraceService;
 
     @GetMapping
     public List<String> listTests() {
@@ -54,6 +57,11 @@ public class TestController {
     @GetMapping("/results")
     public List<TestResultEntity> getResults() {
         return testResultRepository.findAll();
+    }
+
+    @GetMapping("/results/{id}/trace")
+    public List<LatencyTraceDto> getTrace(@PathVariable Long id) {
+        return latencyTraceService.getTracesForResult(id);
     }
 
     @PostMapping("/file")

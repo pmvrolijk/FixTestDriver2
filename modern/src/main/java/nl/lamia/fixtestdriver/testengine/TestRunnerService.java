@@ -6,6 +6,7 @@ import nl.lamia.fixtestdriver.domain.TestResultEntity;
 import nl.lamia.fixtestdriver.dto.FileTreeNode;
 import nl.lamia.fixtestdriver.repository.TestResultRepository;
 import nl.lamia.fixtestdriver.service.FixEngineService;
+import nl.lamia.fixtestdriver.service.LatencyTraceService;
 import nl.lamia.fixtestdriver.service.MessageTransformationService;
 import nl.lamia.fixtestdriver.testengine.step.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ public class TestRunnerService {
     private final FixEngineService fixEngineService;
     private final MessageTransformationService transformationService;
     private final TestResultRepository testResultRepository;
+    private final LatencyTraceService latencyTraceService;
 
     @Value("${application.testcases.root:testcases}")
     private String testCasesRoot;
@@ -60,16 +62,30 @@ public class TestRunnerService {
             context.log("ERROR: " + errorMessage);
         }
 
+        List<LatencyTraceService.LiveTrace> traces = latencyTraceService.drainAndReset();
+
         TestResultEntity result = TestResultEntity.builder()
                 .testName(file.getName())
                 .startTime(startTime)
                 .endTime(LocalDateTime.now())
                 .success(success)
-                .logOutput(context.getOutput().toString())
+                .logOutput(truncateLog(context.getOutput().toString()))
                 .errorMessage(errorMessage)
+                .hasTrace(!traces.isEmpty())
+                .traceCount(traces.size())
                 .build();
 
-        return testResultRepository.save(result);
+        TestResultEntity saved = testResultRepository.save(result);
+        latencyTraceService.persistTraces(saved.getId(), traces);
+        return saved;
+    }
+
+    /** Guards against a pathological run overflowing the TEXT column on stricter engines. */
+    private static String truncateLog(String output) {
+        if (output == null || output.length() <= TestResultEntity.MAX_LOG_OUTPUT_LENGTH) {
+            return output;
+        }
+        return output.substring(0, TestResultEntity.MAX_LOG_OUTPUT_LENGTH);
     }
 
     public List<String> listTests() {
@@ -215,6 +231,8 @@ public class TestRunnerService {
             } else if (line.startsWith("WAIT")) {
                 long time = Long.parseLong(line.split(" ")[1]);
                 steps.add(new WaitStep(time));
+            } else if (line.startsWith("TRACE")) {
+                steps.add(new TraceStep(line.split("\\s+")[1], latencyTraceService));
             } else if (line.matches("^i\\d*,?CONNECT.*")) {
                 steps.add(new ConnectStep(line.split(" ")[1]));
             } else if (line.startsWith("LOOP")) {

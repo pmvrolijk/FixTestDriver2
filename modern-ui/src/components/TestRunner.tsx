@@ -3,7 +3,7 @@ import {apiClient} from '../api/client';
 import {FileTreeNode, TestResult} from '../types';
 import {cn} from '../lib/utils';
 import {
-    Check, CheckCircle2, ChevronDown, ChevronRight, Clock, Code, Edit, FileCode,
+    Activity, Check, CheckCircle2, ChevronDown, ChevronRight, Clock, Code, Edit, FileCode,
     FilePlus, Folder, FolderOpen, FolderPlus, GripVertical, History, Link2, LogOut,
     Pencil, Play, Plus, Repeat, RotateCcw, Save, Trash2, X, XCircle
 } from 'lucide-react';
@@ -400,6 +400,19 @@ const LogOutput = ({ text, errorMessage }: { text?: string; errorMessage?: strin
         )}
     </div>
 );
+
+const TraceBadge = ({ result }: { result: TestResult }) => {
+    if (!result.hasTrace) return null;
+    return (
+        <span
+            title={`${result.traceCount} latency point${result.traceCount === 1 ? '' : 's'} captured`}
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] font-semibold text-purple-300"
+        >
+            <Activity size={11} />
+            {result.traceCount}
+        </span>
+    );
+};
 
 // ─── Sortable step row ────────────────────────────────────────────────────────
 
@@ -966,7 +979,10 @@ export const TestRunner: React.FC = () => {
                                                         <div className="text-[10px] text-surface-600">{new Date(result.startTime).toLocaleString()}</div>
                                                     </div>
                                                 </div>
-                                                <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
+                                                <div className="flex items-center gap-2">
+                                                    <TraceBadge result={result} />
+                                                    <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
+                                                </div>
                                             </summary>
                                             <LogOutput text={result.logOutput} errorMessage={result.errorMessage} />
                                         </details>
@@ -1007,7 +1023,10 @@ export const TestRunner: React.FC = () => {
                                                         <div className="text-[10px] text-surface-600">{new Date(result.startTime).toLocaleString()}</div>
                                                     </div>
                                                 </div>
-                                                <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
+                                                <div className="flex items-center gap-2">
+                                                    <TraceBadge result={result} />
+                                                    <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
+                                                </div>
                                             </summary>
                                             <LogOutput text={result.logOutput} errorMessage={result.errorMessage} />
                                         </details>

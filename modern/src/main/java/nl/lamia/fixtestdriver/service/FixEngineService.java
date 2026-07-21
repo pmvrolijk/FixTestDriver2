@@ -26,6 +26,7 @@ import java.util.function.BiConsumer;
 public class FixEngineService implements Application {
 
     private final OrderManagerService orderManagerService;
+    private final LatencyTraceService latencyTraceService;
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     @Value("${application.fix.config-path:config/FixEngine.cfg}")
@@ -324,6 +325,7 @@ public class FixEngineService implements Application {
     public void toApp(Message message, SessionID sessionId) throws DoNotSend {
         log.info("App Outgoing [{}]: {}", sessionId, message.toString().replace('\001', '|'));
         orderManagerService.addMessage(message);
+        latencyTraceService.onOutgoing(sessionId, message);
         broadcastMessage(sessionId, message, "OUTGOING");
      }
 
@@ -333,6 +335,7 @@ public class FixEngineService implements Application {
 
         // Notify any listeners (like the TestRunner)
         incomingListeners.values().forEach(listener -> listener.accept(sessionId, message));
+        latencyTraceService.onIncoming(sessionId, message);
         broadcastMessage(sessionId, message, "INCOMING");
      }
 

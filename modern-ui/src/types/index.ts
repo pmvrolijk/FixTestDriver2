@@ -29,6 +29,8 @@ export interface TestResult {
     success: boolean;
     logOutput: string;
     errorMessage?: string;
+    hasTrace: boolean;
+    traceCount: number;
 }
 
 export interface FileTreeNode {
