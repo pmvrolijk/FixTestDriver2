@@ -3,11 +3,12 @@ import {apiClient} from '../api/client';
 import {FileTreeNode, TestResult} from '../types';
 import {cn} from '../lib/utils';
 import {
-    Activity, Check, CheckCircle2, ChevronDown, ChevronRight, Clock, Code, Edit, FileCode,
+    Activity, BarChart3, Check, CheckCircle2, ChevronDown, ChevronRight, Clock, Code, Edit, FileCode,
     FilePlus, Folder, FolderOpen, FolderPlus, GripVertical, History, Link2, LogOut,
     Pencil, Play, Plus, Repeat, RotateCcw, Save, Trash2, X, XCircle
 } from 'lucide-react';
 import {FixMessageEditorModal} from './FixMessageEditorModal';
+import {LatencyReportModal} from './LatencyReportModal';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
@@ -510,6 +511,7 @@ export const TestRunner: React.FC = () => {
     const [modalTitle, setModalTitle] = useState('');
     const [modalPrefix, setModalPrefix] = useState<'I' | 'E'>('I');
 
+    const [latencyResult, setLatencyResult] = useState<TestResult | null>(null);
     const [cmdModal, setCmdModal] = useState<CmdModalState | null>(null);
     const [addStepMenuOpen, setAddStepMenuOpen] = useState(false);
     const [availableSessions, setAvailableSessions] = useState<string[]>([]);
@@ -981,6 +983,15 @@ export const TestRunner: React.FC = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <TraceBadge result={result} />
+                                                    {result.hasTrace && (
+                                                        <button
+                                                            title="View latency stats report"
+                                                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setLatencyResult(result); }}
+                                                            className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold text-purple-300 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/20 transition-colors"
+                                                        >
+                                                            <BarChart3 size={12} />
+                                                        </button>
+                                                    )}
                                                     <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
                                                 </div>
                                             </summary>
@@ -1025,6 +1036,15 @@ export const TestRunner: React.FC = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <TraceBadge result={result} />
+                                                    {result.hasTrace && (
+                                                        <button
+                                                            title="View latency stats report"
+                                                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setLatencyResult(result); }}
+                                                            className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold text-purple-300 hover:bg-purple-500/10 border border-transparent hover:border-purple-500/20 transition-colors"
+                                                        >
+                                                            <BarChart3 size={12} />
+                                                        </button>
+                                                    )}
                                                     <ChevronRight size={14} className="text-surface-600 group-open:rotate-90 transition-transform" />
                                                 </div>
                                             </summary>
@@ -1045,6 +1065,13 @@ export const TestRunner: React.FC = () => {
                 initialMessage={modalInitialMsg}
                 title={modalTitle}
                 onSave={handleSaveFixMessage}
+            />
+
+            {/* Latency Stats Report Modal */}
+            <LatencyReportModal
+                isOpen={!!latencyResult}
+                result={latencyResult}
+                onClose={() => setLatencyResult(null)}
             />
 
             {/* Command Editor Modal */}

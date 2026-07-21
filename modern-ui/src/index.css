@@ -114,3 +114,27 @@ button, a, [role="button"] {
 .fade-in {
   animation: fade-in 0.3s ease-out;
 }
+
+/* Print layout for the Latency Stats Report — show only the report, faithful dark capture. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #latency-report,
+  #latency-report * {
+    visibility: visible;
+  }
+  #latency-report {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 16px;
+    background: #020617;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    margin: 12mm;
+  }
+}

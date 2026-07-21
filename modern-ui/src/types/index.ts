@@ -33,6 +33,23 @@ export interface TestResult {
     traceCount: number;
 }
 
+export interface LatencyTraceEventDto {
+    receiveTime: string;
+    receiveNanos: number;
+    latencyNanos: number;
+    ordStatus: string;
+}
+
+export interface LatencyTraceDto {
+    id: number;
+    msgType: string;
+    idTag: number;
+    idValue: string;
+    sendTime: string;
+    sendNanos: number;
+    events: LatencyTraceEventDto[];
+}
+
 export interface FileTreeNode {
     name: string;
     path: string;
