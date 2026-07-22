@@ -47,11 +47,13 @@ public class LatencyTraceService {
     private static final int CLORDID_TAG = 11;
     private static final int MSGTYPE_TAG = 35;
     private static final int ORDSTATUS_TAG = 39;
+    private static final int BEGINSTRING_TAG = 8;
     private static final Set<String> TRACED_OUTGOING_TYPES = Set.of("D", "F", "G", "AB");
     private static final String EXECUTION_REPORT = "8";
 
     private final LatencyTraceRepository traceRepository;
     private final LatencyTraceEventRepository eventRepository;
+    private final MessageTransformationService messageTransformationService;
 
     /** Session IDs (canonical string form) currently being traced for this run. */
     private final Set<String> tracedSessions = ConcurrentHashMap.newKeySet();
@@ -100,7 +102,9 @@ public class LatencyTraceService {
         if (trace == null) {
             return;
         }
-        String ordStatus = getSafeField(message, ORDSTATUS_TAG);
+        String rawOrdStatus = getSafeField(message, ORDSTATUS_TAG);
+        String beginString = getSafeHeaderField(message, BEGINSTRING_TAG);
+        String ordStatus = messageTransformationService.getValueName(beginString, ORDSTATUS_TAG, rawOrdStatus);
         trace.events.add(new LiveEvent(LocalDateTime.now(), System.nanoTime(), ordStatus));
         log.debug("Traced incoming ER idValue={} ordStatus={}", idValue, ordStatus);
     }

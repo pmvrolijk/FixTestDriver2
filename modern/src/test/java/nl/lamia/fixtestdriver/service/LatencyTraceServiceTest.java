@@ -10,7 +10,9 @@ import quickfix.SessionID;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class LatencyTraceServiceTest {
 
@@ -19,9 +21,12 @@ class LatencyTraceServiceTest {
 
     @BeforeEach
     void setUp() {
+        MessageTransformationService mts = mock(MessageTransformationService.class);
+        when(mts.getValueName(eq("FIX.4.2"), eq(39), eq("A"))).thenReturn("PENDING_NEW");
         service = new LatencyTraceService(
                 mock(LatencyTraceRepository.class),
-                mock(LatencyTraceEventRepository.class));
+                mock(LatencyTraceEventRepository.class),
+                mts);
     }
 
     /** Builds a QuickFIX/J Message from a pipe-delimited string (converting '|' to SOH), without validation. */
@@ -45,7 +50,7 @@ class LatencyTraceServiceTest {
         assertThat(trace.getIdTag()).isEqualTo(11);
         assertThat(trace.getIdValue()).isEqualTo("ORD1");
         assertThat(trace.getEvents()).hasSize(1);
-        assertThat(trace.getEvents().get(0).getOrdStatus()).isEqualTo("A");
+        assertThat(trace.getEvents().get(0).getOrdStatus()).isEqualTo("PENDING_NEW");
         assertThat(trace.getEvents().get(0).getReceiveNanos()).isGreaterThan(trace.getSendNanos());
     }
 

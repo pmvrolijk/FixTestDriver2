@@ -9,7 +9,7 @@ interface HelpModalProps {
 const TABS = [
     { name: 'Sessions', purpose: 'Manage FIX engine sessions — connect, disconnect, reset sequence numbers, and edit session configuration.' },
     { name: 'Products', purpose: 'Edit the product symbol dictionary. Products defined here are available via the <Product=SYM,PROP> macro in test scripts.' },
-    { name: 'Tests', purpose: 'Browse, create, edit, and run .def test scripts. View per-run pass/fail output.' },
+    { name: 'Tests', purpose: 'Browse, create, edit, and run .def test scripts. View per-run pass/fail output. Runs that use the TRACE directive also produce an optional latency report, viewable on the individual test result.' },
     { name: 'Logs', purpose: 'Real-time stream of all FIX messages sent and received across all sessions.' },
     { name: 'Dictionary', purpose: 'Browse FIX field definitions, message types, and enum values from the loaded QuickFIX dictionaries.' },
 ];
@@ -19,6 +19,7 @@ const COMMANDS = [
     { command: 'E<fields>', description: 'Wait up to 10 s for an incoming message matching the expected fields. Values inside <…> are treated as Java regex patterns.', example: 'E8=FIX.4.2|35=8|11=<Ord1-[0-9]*>|39=0|' },
     { command: 'WAIT <ms>', description: 'Pause execution for N milliseconds.', example: 'WAIT 1000' },
     { command: 'iCONNECT <sessionId>', description: 'Switch the active session context. The session ID must match an entry in FixEngine.cfg.', example: 'iCONNECT FIX.4.2:INIT->ACC' },
+    { command: 'TRACE <sessionId>', description: 'Enable latency tracing on the given session. Outgoing orders (35=D/F/G/AB) are timestamped and correlated with incoming ExecutionReports (35=8) by ClOrdID (tag 11) to produce a round-trip latency report, viewable on the individual test result.', example: 'TRACE FIX.4.2:INIT->ACC' },
     { command: 'LOOP <n> … END', description: 'Repeat the enclosed block of steps N times.', example: 'LOOP 5\nI8=FIX.4.2|35=D|…|\nWAIT 200\nEND' },
     { command: 'RESET <id>', description: 'Clear the stored ClOrdID mapping for the given template ID.', example: 'RESET Ord1' },
     { command: 'eDISCONNECT', description: 'Mark that a session disconnect is expected at this point in the script.', example: 'eDISCONNECT' },

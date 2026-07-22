@@ -496,6 +496,23 @@ public class MessageTransformationService {
         return "Unknown Tag";
     }
 
+    public String getValueName(String beginString, int tag, String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        DataDictionary dd = dataDictionaries.get(beginString);
+        if (dd == null) {
+            dd = dataDictionaries.get("FIX.4.2"); // fallback
+        }
+        if (dd != null && dd.hasFieldValue(tag) && dd.isFieldValue(tag, value)) {
+            String name = dd.getValueName(tag, value);
+            if (name != null) {
+                return name;
+            }
+        }
+        return value; // fall back to the raw code when unmappable
+    }
+
     public String getFieldType(String beginString, int tag) {
         DataDictionary dd = dataDictionaries.get(beginString);
         if (dd == null) {
