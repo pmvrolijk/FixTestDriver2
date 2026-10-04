@@ -1,6 +1,6 @@
 services:
   backend:
-    image: lamiaconsultancy/fixtestdriver-backend:latest
+    image: ghcr.io/pmvrolijk/fixtestdriver-backend:latest
     container_name: fixtestdriver-backend
     ports:
       - "8080:8080"
@@ -24,7 +24,7 @@ services:
       retries: 3
 
   frontend:
-    image: lamiaconsultancy/fixtestdriver-frontend:latest
+    image: ghcr.io/pmvrolijk/fixtestdriver-frontend:latest
     container_name: fixtestdriver-frontend
     ports:
       - "3001:80"
