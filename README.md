@@ -35,7 +35,7 @@ In 2026, the project underwent a complete architectural modernization to transit
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide.
 - **Infrastructure**: Docker, Docker Compose, Spring Boot Actuator (Health/Readiness).
 
-## Quick Start (Docker)
+## Quick Start (Docker local build)
 Ensure Docker and Docker Compose are installed and running.
 
 1. **Build and Start**:
@@ -44,6 +44,15 @@ Ensure Docker and Docker Compose are installed and running.
    ```
 2. **Access the UI**: [http://localhost:3001](http://localhost:3001)
 3. **Run a Test**: Go to the "Tests" tab, select `loopback.def`, and click Play.
+
+## Quick Start (ghcr.io images)
+Ensure Docker and Docker Compose are installed and running.
+
+   ```bash
+   docker compose -f docker-compose.hub.yml up -d
+   ```
+Will pull the Github registry images and spin up backend and frontend. Examples will be 
+added to config and test if the directories do not exist yet.
 
 ## Developer Setup
 
@@ -81,13 +90,13 @@ Ensure Docker and Docker Compose are installed and running.
 - `/logs`: FIX engine and application logs.
 
 ## Future Roadmap
-- [ ] Web-based Test Case Editor.
-- [ ] Single message ad hoc sending.
-- [ ] Expanding scripting language features, loops, macros.
+- [x] Web-based Test Case Editor.
+- [x] Single message ad hoc sending.
+- [x] Expanding scripting language features, loops, macros.
 - [ ] Exchange simulator.
 - [ ] Order view.
 - [ ] Dictionary editor.
-- [ ] Dynamic FIX Session Creator/Editor. Improved session management.
+- [x] Dynamic FIX Session Creator/Editor. Improved session management.
 - [ ] Multi-tenant support and RBAC.
 
 ## Container Images
