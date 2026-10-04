@@ -1,5 +1,8 @@
 # FixTestDriver v2.0
 
+[![CI](https://github.com/pmvrolijk/FixTestDriver2/actions/workflows/ci.yml/badge.svg)](https://github.com/pmvrolijk/FixTestDriver2/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+
 ## Project History
 FixTestDriver was originally developed fifteen years ago as a Java 6 Swing application. It served as a specialized tool for testing FIX (Financial Information eXchange) protocol engines, allowing developers to define complex test scenarios using a custom `.def` scripting language. 
 
@@ -71,3 +74,21 @@ Ensure Docker and Docker Compose are installed and running.
 - [ ] Dictionary editor.
 - [ ] Dynamic FIX Session Creator/Editor. Improved session management.
 - [ ] Multi-tenant support and RBAC.
+
+## Container Images
+Every push to `Modernisation` or `master` publishes multi-arch (amd64/arm64) images to the GitHub Container Registry:
+- `ghcr.io/pmvrolijk/fixtestdriver-backend`
+- `ghcr.io/pmvrolijk/fixtestdriver-frontend`
+
+Tags: `latest` (default branch), the branch name, `sha-<short>`, and semver tags for `v*` git tags.
+
+## License
+Copyright (C) 2026 P.M. Vrolijk
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+GNU Affero General Public License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+[GNU Affero General Public License](LICENSE) for more details.

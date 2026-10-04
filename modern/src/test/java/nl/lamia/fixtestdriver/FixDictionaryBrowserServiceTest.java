@@ -18,7 +18,7 @@ class FixDictionaryBrowserServiceTest {
 
     @BeforeEach
     void setUp() {
-        URL resourceDir = getClass().getClassLoader().getResource("quickfix");
+        URL resourceDir = getClass().getClassLoader().getResource("config/quickfix");
         assertThat(resourceDir).isNotNull();
 
         service = new FixDictionaryBrowserService();

@@ -6,4 +6,17 @@
 /modern/data/FixEngine/**
 /modern/data/*.db
 /modern/logs/**
-.idea
+.idea/
+
+# IDE settings
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+**/nbproject/private/
+.claude/settings.local.json
+.claude/*.lock
+
+# Generated test reports
+TEST-*.xml
