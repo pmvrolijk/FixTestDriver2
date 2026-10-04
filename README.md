@@ -43,7 +43,7 @@ Ensure Docker and Docker Compose are installed and running.
    docker compose up --build -d
    ```
 2. **Access the UI**: [http://localhost:3001](http://localhost:3001)
-3. **Run a Test**: Go to the "Tests" tab, select `loopback.def`, and click Play.
+3. **Run a Test**: Go to the "Tests" tab, select `loopback.def`, and click Run.
 
 ## Quick Start (ghcr.io images)
 Ensure Docker and Docker Compose are installed and running.
@@ -53,6 +53,11 @@ Ensure Docker and Docker Compose are installed and running.
    ```
 Will pull the Github registry images and spin up backend and frontend. Examples will be 
 added to config and test if the directories do not exist yet.
+
+### Network access
+FixTestDriver is a local testing tool without authentication. Both compose files therefore publish
+their ports on `127.0.0.1` only. To reach an acceptor from another machine (e.g. a FIX counterparty),
+drop the `127.0.0.1:` prefix for that port in the compose file — and only do so on a trusted network.
 
 ## Developer Setup
 

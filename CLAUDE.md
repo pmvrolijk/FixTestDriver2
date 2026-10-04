@@ -25,25 +25,29 @@ See also: [[README.md]], [[GEMINI.md]], [[TODO.md]] for project history, coding 
 - **Entry point**: `FixTestDriverApplication.java` — Spring Boot with `@EnableAsync`
 - **Core services**:
   - `FixEngineService` — wraps QuickFIX/J `Application`, manages Initiator/Acceptor lifecycle, broadcasts messages via WebSocket (`SimpMessagingTemplate`) to `/topic/messages` and `/topic/sessions`
-  - `TestRunnerService` — parses `.def` scripts into `TestStep` instances and executes them sequentially
+  - `TestRunnerService` (`testengine/`) — parses `.def` scripts into `TestStep` instances and executes them sequentially
   - `MessageTransformationService` — transforms raw FIX message strings (pipe-delimited) into QuickFIX `Message` objects
-  - `OrderManagerService` / `DictionaryService` — order tracking and dictionary browsing
-- **Test step types**: `SendMessageStep`, `ExpectMessageStep`, `ConnectStep`, `WaitStep` (all implement `TestStep` interface)
-- **Controllers**: `SessionController` (`/api/sessions`), `TestController` (`/api/tests`), `DictionaryController` (`/api/dictionary`)
+  - `SessionConfigService` — reads/writes session definitions in `FixEngine.cfg`
+  - `LatencyTraceService` — correlates traced orders with ExecutionReports for latency reports (Flyway-managed tables)
+  - `OrderManagerService` / `DictionaryService` / `FixDictionaryBrowserService` — order tracking, products dictionary, FIX dictionary browsing
+- **Test step types** (`testengine/step/`): `SendMessageStep`, `ExpectMessageStep`, `ConnectStep`, `WaitStep`, `LoopStep`, `TraceStep` (all implement `TestStep` interface)
+- **Controllers**: `SessionController` (`/api/sessions`), `TestController` (`/api/tests`), `DictionaryController` (`/api/dictionary`), `FixDictionaryBrowserController` (`/api/fix-dictionary`)
 - **Config**: `application.yml` — all externalized paths are env-var driven (see Docker section)
 
 ### Frontend (`modern-ui/`)
-- **App**: Single-page app with tab-based navigation (Sessions | Tests | Logs)
+- **App**: Single-page app with tab-based navigation (Sessions | Products | Tests | Logs | Dictionary)
 - **WebSocket client**: Uses `@stomp/stompjs` + SockJS, subscribes to `/topic/messages` and `/topic/sessions` topics
 - **API client**: Axios instance with `VITE_API_BASE_URL` (defaults to `http://localhost:8080/api`)
-- **Components**: `SessionDashboard`, `TestRunner`, `MessageLog`, `Layout`, `FixMessageEditorModal`
+- **Components**: `Layout`, `SessionDashboard`, `SessionConfigModal`, `ProductsEditor`, `TestRunner`, `LatencyReportModal`, `MessageLog`, `DictionaryExplorer`, `FixMessageEditorModal`, `HelpModal`
 
 ### `.def` Script Language
 Test scripts use a line-based DSL:
 - `I...` — send a FIX message (pipe-delimited, e.g., `I8=DOM|9=47|35=D|...`)
 - `E...` — expect a FIX message (with regex matching, 10s timeout)
 - `WAIT <ms>` — wait N milliseconds
-- `i<id> CONNECT <sessionId>` — connect to a session
+- `iCONNECT <sessionId>` — switch the active session context
+- `LOOP <n> … END`, `TRACE <sessionId>`, `RESET <id>`, `eDISCONNECT`, `# comment`
+- The full command and macro reference lives in `modern-ui/src/components/HelpModal.tsx` — keep it in sync when adding commands
 
 ## Development Commands
 
@@ -79,7 +83,7 @@ docker compose logs -f         # Stream logs
 |---|---|---|
 | `SPRING_DATASOURCE_URL` | `jdbc:h2:file:./data/fixtestdriver;AUTO_SERVER=TRUE` | H2 DB path |
 | `FIX_CONFIG_PATH` | `./config/FixEngine.cfg` | FIX engine config |
-| `TESTCASES_ROOT` | `./data/testcases` | Test scripts directory |
+| `TESTCASES_ROOT` | `src/main/resources/config/testcases` | Test scripts directory |
 | `PRODUCTS_DEF_PATH` | `./config/products.def` | Product dictionary |
 | `QUICKFIX_DICT_PATH` | `./config/quickfix` | QuickFIX dict XMLs |
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, HelpCircle } from 'lucide-react';
+import { X, HelpCircle, ExternalLink } from 'lucide-react';
 
 interface HelpModalProps {
     isOpen: boolean;
@@ -154,6 +154,20 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                         </table>
                     </section>
 
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between gap-3 px-6 py-3 border-t border-white/5 flex-shrink-0 text-xs text-slate-500">
+                    <span>© 2026 P.M. Vrolijk · Licensed under the AGPL-3.0</span>
+                    <a
+                        href="https://github.com/pmvrolijk/FixTestDriver2"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                        Source code on GitHub
+                        <ExternalLink size={12} />
+                    </a>
                 </div>
             </div>
         </div>
