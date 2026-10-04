@@ -33,7 +33,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <quickfixj.version>2.3.1</quickfixj.version>
+        <quickfixj.version>3.0.2</quickfixj.version>
     </properties>
 
     <dependencies>
