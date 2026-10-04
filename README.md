@@ -15,6 +15,21 @@ In 2026, the project underwent a complete architectural modernization to transit
 - **WebSocket Streaming**: Live FIX message events pushed from the engine to the browser.
 - **Containerized Deployment**: Fully dockerized stack with persistent storage for logs, data, and configs.
 
+## Screenshots
+
+**Sessions**: initiator and acceptor sessions with live sequence numbers and a per-session message feed.
+![Sessions](assets/sessions.jpg)
+
+| Tests | Logs |
+|---|---|
+| ![Tests](assets/tests.jpg) | ![Logs](assets/logs.jpg) |
+| Step editor for `.def` scripts with run history. | Live message stream across all sessions. |
+
+| Products | Dictionary |
+|---|---|
+| ![Products](assets/products.jpg) | ![Dictionary](assets/dictionary.jpg) |
+| Product definitions used by test-script macros. | FIX dictionary browser per protocol version. |
+
 ## Technology Stack
 - **Backend**: Java 21, Spring Boot 3.3, QuickFIX/J 2.3.1, Spring Data JPA (H2).
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide.
