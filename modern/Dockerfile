@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn package -DskipTests -B
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 
 # Create standard directories
